@@ -37,7 +37,8 @@ async def oauth_login(provider: str):
             f"redirect_uri={settings.GOOGLE_REDIRECT_URI}&"
             f"response_type=code&"
             f"scope=openid email profile&"
-            f"access_type=offline"
+            f"access_type=offline&"
+            f"prompt=select_account"  # Always show account picker
         ),
         'microsoft': (
             f"https://login.microsoftonline.com/{settings.MICROSOFT_TENANT_ID}/oauth2/v2.0/authorize?"
@@ -45,13 +46,15 @@ async def oauth_login(provider: str):
             f"redirect_uri={settings.MICROSOFT_REDIRECT_URI}&"
             f"response_type=code&"
             f"scope=openid email profile User.Read&"
-            f"response_mode=query"
+            f"response_mode=query&"
+            f"prompt=select_account"  # Always show account picker
         ),
         'github': (
             f"https://github.com/login/oauth/authorize?"
             f"client_id={settings.GITHUB_CLIENT_ID}&"
             f"redirect_uri={settings.GITHUB_REDIRECT_URI}&"
-            f"scope=read:user user:email"
+            f"scope=read:user user:email&"
+            f"prompt=select_account"  # GitHub uses login parameter for re-authentication
         )
     }
     

@@ -22,8 +22,8 @@ export default function AttendancePage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-slate-900">Attendance</h1>
-          <p className="text-slate-600 mt-1">Track student attendance records</p>
+          <h1 className="text-2xl font-bold text-white">Attendance</h1>
+          <p className="text-slate-400 mt-1">Track student attendance records</p>
         </div>
         <button className="btn-primary flex items-center gap-2">
           <Plus className="w-4 h-4" />
@@ -34,40 +34,40 @@ export default function AttendancePage() {
       <div className="card">
         {isLoading ? (
           <div className="text-center py-12">
-            <div className="inline-block w-8 h-8 border-4 border-primary-600 border-t-transparent rounded-full animate-spin" />
+            <div className="inline-block w-8 h-8 border-4 border-amber-500 border-t-transparent rounded-full animate-spin" />
           </div>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full">
-              <thead className="border-b border-slate-200">
+              <thead className="border-b border-slate-700/50">
                 <tr>
-                  <th className="text-left py-3 px-4 font-semibold text-slate-700">Date</th>
-                  <th className="text-left py-3 px-4 font-semibold text-slate-700">Student ID</th>
-                  <th className="text-left py-3 px-4 font-semibold text-slate-700">Course ID</th>
-                  <th className="text-left py-3 px-4 font-semibold text-slate-700">Status</th>
-                  <th className="text-left py-3 px-4 font-semibold text-slate-700">Notes</th>
+                  <th className="text-left py-3 px-4 font-semibold text-slate-300">Date</th>
+                  <th className="text-left py-3 px-4 font-semibold text-slate-300">Student ID</th>
+                  <th className="text-left py-3 px-4 font-semibold text-slate-300">Course ID</th>
+                  <th className="text-left py-3 px-4 font-semibold text-slate-300">Status</th>
+                  <th className="text-left py-3 px-4 font-semibold text-slate-300">Notes</th>
                 </tr>
               </thead>
               <tbody>
                 {attendance.map((record) => (
-                  <tr key={record.id} className="border-b border-slate-100 hover:bg-slate-50">
-                    <td className="py-3 px-4 text-slate-900">
+                  <tr key={record.id} className="border-b border-slate-700/30 hover:bg-slate-800/50 transition-colors">
+                    <td className="py-3 px-4 text-white">
                       {new Date(record.date).toLocaleDateString()}
                     </td>
-                    <td className="py-3 px-4 text-slate-600">{record.student_id}</td>
-                    <td className="py-3 px-4 text-slate-600">{record.course_id}</td>
+                    <td className="py-3 px-4 text-slate-400">{record.student_id}</td>
+                    <td className="py-3 px-4 text-slate-400">{record.course_id}</td>
                     <td className="py-3 px-4">
                       <span className={`badge ${getStatusBadge(record.status)}`}>
                         {record.status}
                       </span>
                     </td>
-                    <td className="py-3 px-4 text-slate-600">{record.notes || '-'}</td>
+                    <td className="py-3 px-4 text-slate-400">{record.notes || '-'}</td>
                   </tr>
                 ))}
               </tbody>
             </table>
             {attendance.length === 0 && (
-              <p className="text-center py-12 text-slate-500">No attendance records found</p>
+              <p className="text-center py-12 text-slate-400">No attendance records found</p>
             )}
           </div>
         )}
