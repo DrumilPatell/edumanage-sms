@@ -71,9 +71,9 @@ async def get_student(
 async def create_student(
     student: StudentCreate,
     db: Session = Depends(get_db),
-    current_user: User = Depends(require_admin)
+    current_user: User = Depends(require_faculty)
 ):
-    """Create student profile (Admin only)"""
+    """Create student profile (Admin and Faculty)"""
     # Check if user exists
     user = db.query(User).filter(User.id == student.user_id).first()
     if not user:

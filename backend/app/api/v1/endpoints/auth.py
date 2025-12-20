@@ -5,9 +5,9 @@ import httpx
 from app.db.database import get_db
 from app.auth.oauth import get_oauth_provider
 from app.auth.utils import create_or_update_user
-from app.core.security import create_access_token
+from app.core.security import create_access_token, hash_password, verify_password
 from app.core.config import settings
-from app.schemas.user import UserWithToken, UserResponse
+from app.schemas.user import UserWithToken, UserResponse, UserRegister, UserLogin
 from app.auth.dependencies import get_current_user
 from app.db.models import User
 import logging
@@ -202,6 +202,113 @@ async def get_last_jwt():
     payload = verify_token(_LAST_JWT)
     # Also return the raw token string for offline decoding (DEV only)
     return {"ok": True, "token": _LAST_JWT, "token_len": len(_LAST_JWT), "payload": payload}
+
+
+@router.post("/register", response_model=UserWithToken)
+async def register(
+    user_data: UserRegister,
+    db: Session = Depends(get_db)
+):
+    """
+    Register a new user with email and password
+    User selects their role during registration
+    """
+    # Check if email already exists
+    existing_user = db.query(User).filter(User.email == user_data.email).first()
+    if existing_user:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Email already registered"
+        )
+    
+    # Hash password
+    hashed_password = hash_password(user_data.password)
+    
+    # Create new user
+    new_user = User(
+        email=user_data.email,
+        full_name=user_data.full_name,
+        hashed_password=hashed_password,
+        role=user_data.role,
+        oauth_provider=None,
+        oauth_id=None
+    )
+    
+    db.add(new_user)
+    db.commit()
+    db.refresh(new_user)
+    
+    # Create access token
+    access_token = create_access_token(
+        data={
+            "sub": new_user.id,
+            "email": new_user.email,
+            "role": new_user.role.value
+        }
+    )
+    
+    global _LAST_JWT
+    _LAST_JWT = access_token
+    
+    return UserWithToken(
+        user=UserResponse.model_validate(new_user),
+        access_token=access_token
+    )
+
+
+@router.post("/login", response_model=UserWithToken)
+async def login(
+    credentials: UserLogin,
+    db: Session = Depends(get_db)
+):
+    """
+    Login with email and password
+    """
+    # Find user by email
+    user = db.query(User).filter(User.email == credentials.email).first()
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid email or password"
+        )
+    
+    # Check if user registered with password (not OAuth)
+    if not user.hashed_password:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="This account uses OAuth login. Please login with Google, Microsoft, or GitHub."
+        )
+    
+    # Verify password
+    if not verify_password(credentials.password, user.hashed_password):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid email or password"
+        )
+    
+    # Check if account is active
+    if not user.is_active:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Account is inactive"
+        )
+    
+    # Create access token
+    access_token = create_access_token(
+        data={
+            "sub": user.id,
+            "email": user.email,
+            "role": user.role.value
+        }
+    )
+    
+    global _LAST_JWT
+    _LAST_JWT = access_token
+    
+    return UserWithToken(
+        user=UserResponse.model_validate(user),
+        access_token=access_token
+    )
 
 
 @router.get("/me", response_model=UserResponse)

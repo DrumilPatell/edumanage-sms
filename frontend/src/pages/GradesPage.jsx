@@ -1,8 +1,12 @@
 import { useQuery } from '@tanstack/react-query'
 import { academicApi } from '../services/api'
+import { useAuthStore } from '../store/authStore'
 import { Plus } from 'lucide-react'
 
 export default function GradesPage() {
+  const { user } = useAuthStore()
+  const canEdit = user?.role === 'admin' || user?.role === 'faculty'
+  
   const { data: grades = [], isLoading } = useQuery({
     queryKey: ['grades'],
     queryFn: () => academicApi.getGrades({ limit: 100 }),
@@ -22,10 +26,12 @@ export default function GradesPage() {
           <h1 className="text-2xl font-bold text-white">Grades</h1>
           <p className="text-slate-400 mt-1">Manage student grades and assessments</p>
         </div>
-        <button className="btn-primary flex items-center gap-2">
-          <Plus className="w-4 h-4" />
-          Add Grade
-        </button>
+        {canEdit && (
+          <button className="btn-primary flex items-center gap-2">
+            <Plus className="w-4 h-4" />
+            Add Grade
+          </button>
+        )}
       </div>
 
       <div className="card">

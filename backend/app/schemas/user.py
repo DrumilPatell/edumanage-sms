@@ -17,6 +17,20 @@ class UserCreate(UserBase):
     role: RoleEnum = RoleEnum.STUDENT
 
 
+class UserRegister(BaseModel):
+    """For email/password registration"""
+    email: EmailStr
+    full_name: str
+    password: str
+    role: RoleEnum
+
+
+class UserLogin(BaseModel):
+    """For email/password login"""
+    email: EmailStr
+    password: str
+
+
 class UserUpdate(BaseModel):
     full_name: Optional[str] = None
     profile_picture: Optional[str] = None

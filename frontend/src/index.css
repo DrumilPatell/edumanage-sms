@@ -34,6 +34,11 @@
   .input {
     @apply flex h-10 w-full rounded-lg border border-slate-600 bg-slate-800/50 px-3 py-2 text-sm text-slate-200 ring-offset-slate-900 file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-slate-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50;
   }
+
+  .input-field {
+    @apply flex h-12 w-full rounded-lg border border-slate-600 bg-slate-700 px-4 py-3 text-sm text-white ring-offset-slate-900 file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-slate-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500 focus-visible:border-transparent disabled:cursor-not-allowed disabled:opacity-50;
+    color-scheme: dark;
+  }
   
   .card {
     @apply rounded-xl border border-slate-700/50 bg-gradient-to-br from-slate-800/50 to-slate-900/50 backdrop-blur-xl p-6 shadow-2xl;
@@ -57,6 +62,15 @@
   
   .badge-danger {
     @apply badge bg-red-500/10 text-red-400 border border-red-500/20;
+  }
+
+  /* Date input styling - calendar icon on the right */
+  input[type="date"]::-webkit-calendar-picker-indicator {
+    cursor: pointer;
+    opacity: 1;
+    position: absolute;
+    right: 12px;
+    background: transparent;
   }
 }
 

@@ -1,8 +1,12 @@
 import { useQuery } from '@tanstack/react-query'
 import { academicApi } from '../services/api'
+import { useAuthStore } from '../store/authStore'
 import { Plus } from 'lucide-react'
 
 export default function AttendancePage() {
+  const { user } = useAuthStore()
+  const canEdit = user?.role === 'admin' || user?.role === 'faculty'
+  
   const { data: attendance = [], isLoading } = useQuery({
     queryKey: ['attendance'],
     queryFn: () => academicApi.getAttendance({ limit: 100 }),
@@ -25,10 +29,12 @@ export default function AttendancePage() {
           <h1 className="text-2xl font-bold text-white">Attendance</h1>
           <p className="text-slate-400 mt-1">Track student attendance records</p>
         </div>
-        <button className="btn-primary flex items-center gap-2">
-          <Plus className="w-4 h-4" />
-          Mark Attendance
-        </button>
+        {canEdit && (
+          <button className="btn-primary flex items-center gap-2">
+            <Plus className="w-4 h-4" />
+            Mark Attendance
+          </button>
+        )}
       </div>
 
       <div className="card">

@@ -32,11 +32,20 @@ class Settings(BaseSettings):
     
     # Role Assignment
     ADMIN_EMAILS: str = ""
-    FACULTY_DOMAIN: str = ""
+    FACULTY_EMAILS: str = ""
+    STUDENT_EMAILS: str = ""
     
     @property
     def admin_emails_list(self) -> List[str]:
         return [email.strip() for email in self.ADMIN_EMAILS.split(",") if email.strip()]
+    
+    @property
+    def faculty_emails_list(self) -> List[str]:
+        return [email.strip() for email in self.FACULTY_EMAILS.split(",") if email.strip()]
+    
+    @property
+    def student_emails_list(self) -> List[str]:
+        return [email.strip() for email in self.STUDENT_EMAILS.split(",") if email.strip()]
     
     class Config:
         env_file = ".env"

@@ -1,10 +1,13 @@
 import { useQuery } from '@tanstack/react-query'
+import { useNavigate } from 'react-router-dom'
 import { coursesApi, studentsApi } from '../../services/api'
 import { useAuthStore } from '../../store/authStore'
-import { BookOpen, Users, Award } from 'lucide-react'
+import { BookOpen, Users, Award, UserCheck, PlusCircle, ClipboardCheck } from 'lucide-react'
 
 export default function FacultyDashboard() {
   const { user } = useAuthStore()
+  const navigate = useNavigate()
+  
   const { data: myCourses = [] } = useQuery({
     queryKey: ['my-courses'],
     queryFn: () => coursesApi.getMyCourses(),
@@ -94,10 +97,46 @@ export default function FacultyDashboard() {
       {/* Quick Actions */}
       <div className="card">
         <h3 className="text-lg font-semibold text-white mb-4">Quick Actions</h3>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-          <button className="btn-primary">Mark Attendance</button>
-          <button className="btn-primary">Enter Grades</button>
-          <button className="btn-secondary">View Students</button>
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
+          <button 
+            onClick={() => navigate('/add-student')}
+            className="flex flex-col items-center gap-2 p-4 bg-slate-700/50 border border-slate-600 rounded-lg hover:bg-slate-600/50 hover:border-amber-500/50 transition-all group"
+          >
+            <UserCheck className="w-6 h-6 text-green-400 group-hover:scale-110 transition-transform" />
+            <span className="text-xs text-slate-300 text-center">Add Student</span>
+          </button>
+          
+          <button 
+            onClick={() => navigate('/add-course')}
+            className="flex flex-col items-center gap-2 p-4 bg-slate-700/50 border border-slate-600 rounded-lg hover:bg-slate-600/50 hover:border-amber-500/50 transition-all group"
+          >
+            <PlusCircle className="w-6 h-6 text-blue-400 group-hover:scale-110 transition-transform" />
+            <span className="text-xs text-slate-300 text-center">Add Course</span>
+          </button>
+          
+          <button 
+            onClick={() => navigate('/enroll-student')}
+            className="flex flex-col items-center gap-2 p-4 bg-slate-700/50 border border-slate-600 rounded-lg hover:bg-slate-600/50 hover:border-amber-500/50 transition-all group"
+          >
+            <BookOpen className="w-6 h-6 text-purple-400 group-hover:scale-110 transition-transform" />
+            <span className="text-xs text-slate-300 text-center">Enroll Student</span>
+          </button>
+          
+          <button 
+            onClick={() => navigate('/mark-attendance')}
+            className="flex flex-col items-center gap-2 p-4 bg-slate-700/50 border border-slate-600 rounded-lg hover:bg-slate-600/50 hover:border-amber-500/50 transition-all group"
+          >
+            <ClipboardCheck className="w-6 h-6 text-cyan-400 group-hover:scale-110 transition-transform" />
+            <span className="text-xs text-slate-300 text-center">Mark Attendance</span>
+          </button>
+          
+          <button 
+            onClick={() => navigate('/assign-grade')}
+            className="flex flex-col items-center gap-2 p-4 bg-slate-700/50 border border-slate-600 rounded-lg hover:bg-slate-600/50 hover:border-amber-500/50 transition-all group"
+          >
+            <Award className="w-6 h-6 text-yellow-400 group-hover:scale-110 transition-transform" />
+            <span className="text-xs text-slate-300 text-center">Assign Grade</span>
+          </button>
         </div>
       </div>
     </div>
