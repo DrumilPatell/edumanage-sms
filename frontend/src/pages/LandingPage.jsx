@@ -27,6 +27,7 @@ export default function LandingPage() {
             </Link>
             <Link
               to="/login"
+              state={{ openRegister: true }}
               className="px-6 py-2.5 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white rounded-lg font-medium shadow-lg shadow-amber-500/30 transition-all"
             >
               Sign Up
@@ -60,6 +61,7 @@ export default function LandingPage() {
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Link
                 to="/login"
+                state={{ openRegister: true }}
                 className="px-8 py-4 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white rounded-xl font-semibold shadow-2xl shadow-amber-500/40 transition-all transform hover:scale-105"
               >
                 Get Started Free
@@ -253,25 +255,25 @@ export default function LandingPage() {
             <div>
               <h4 className="text-white font-semibold mb-4">Product</h4>
               <ul className="space-y-2 text-slate-400 text-sm">
-                <li><a href="#" className="hover:text-amber-400 transition-colors">Features</a></li>
-                <li><a href="#" className="hover:text-amber-400 transition-colors">Pricing</a></li>
-                <li><a href="#" className="hover:text-amber-400 transition-colors">Security</a></li>
+                <li><Link to="/features" className="hover:text-amber-400 transition-colors">Features</Link></li>
+                <li><Link to="/pricing" className="hover:text-amber-400 transition-colors">Pricing</Link></li>
+                <li><Link to="/security" className="hover:text-amber-400 transition-colors">Security</Link></li>
               </ul>
             </div>
             <div>
               <h4 className="text-white font-semibold mb-4">Company</h4>
               <ul className="space-y-2 text-slate-400 text-sm">
-                <li><a href="#" className="hover:text-amber-400 transition-colors">About</a></li>
-                <li><a href="#" className="hover:text-amber-400 transition-colors">Blog</a></li>
-                <li><a href="#" className="hover:text-amber-400 transition-colors">Careers</a></li>
+                <li><Link to="/about" className="hover:text-amber-400 transition-colors">About</Link></li>
+                <li><Link to="/blog" className="hover:text-amber-400 transition-colors">Blog</Link></li>
+                <li><Link to="/careers" className="hover:text-amber-400 transition-colors">Careers</Link></li>
               </ul>
             </div>
             <div>
               <h4 className="text-white font-semibold mb-4">Support</h4>
               <ul className="space-y-2 text-slate-400 text-sm">
-                <li><a href="#" className="hover:text-amber-400 transition-colors">Help Center</a></li>
-                <li><a href="#" className="hover:text-amber-400 transition-colors">Contact</a></li>
-                <li><a href="#" className="hover:text-amber-400 transition-colors">API Docs</a></li>
+                <li><Link to="/help" className="hover:text-amber-400 transition-colors">Help Center</Link></li>
+                <li><Link to="/contact" className="hover:text-amber-400 transition-colors">Contact</Link></li>
+                <li><Link to="/api-docs" className="hover:text-amber-400 transition-colors">API Docs</Link></li>
               </ul>
             </div>
           </div>
@@ -280,9 +282,9 @@ export default function LandingPage() {
               © 2025 EduManage. All rights reserved.
             </p>
             <div className="flex gap-6 text-slate-400 text-sm">
-              <a href="#" className="hover:text-amber-400 transition-colors">Privacy</a>
-              <a href="#" className="hover:text-amber-400 transition-colors">Terms</a>
-              <a href="#" className="hover:text-amber-400 transition-colors">Cookies</a>
+              <Link to="/privacy" className="hover:text-amber-400 transition-colors">Privacy</Link>
+              <Link to="/terms" className="hover:text-amber-400 transition-colors">Terms</Link>
+              <Link to="/cookies" className="hover:text-amber-400 transition-colors">Cookies</Link>
             </div>
           </div>
         </div>

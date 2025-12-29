@@ -1,10 +1,27 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { useAuthStore } from './store/authStore'
+import ScrollToTop from './components/ScrollToTop'
 import LandingPage from './pages/LandingPage'
 import LoginPage from './pages/LoginPage'
 import AuthCallback from './pages/AuthCallback'
 import TermsOfServicePage from './pages/TermsOfServicePage'
 import PrivacyPolicyPage from './pages/PrivacyPolicyPage'
+import AboutPage from './pages/AboutPage'
+import ContactPage from './pages/ContactPage'
+import FeaturesPage from './pages/FeaturesPage'
+import PricingPage from './pages/PricingPage'
+import SecurityPage from './pages/SecurityPage'
+import BlogPage from './pages/BlogPage'
+import CareersPage from './pages/CareersPage'
+import HelpCenterPage from './pages/HelpCenterPage'
+import APIDocsPage from './pages/APIDocsPage'
+import CookiesPage from './pages/CookiesPage'
+import BlogPost1 from './pages/blog/BlogPost1'
+import BlogPost2 from './pages/blog/BlogPost2'
+import BlogPost3 from './pages/blog/BlogPost3'
+import BlogPost4 from './pages/blog/BlogPost4'
+import BlogPost5 from './pages/blog/BlogPost5'
+import BlogPost6 from './pages/blog/BlogPost6'
 import DashboardLayout from './layouts/DashboardLayout'
 import AdminDashboard from './pages/dashboards/AdminDashboard'
 import FacultyDashboard from './pages/dashboards/FacultyDashboard'
@@ -45,6 +62,7 @@ function App() {
 
   return (
     <BrowserRouter>
+      <ScrollToTop />
       <Routes>
         <Route path="/" element={<LandingPage />} />
         
@@ -54,6 +72,22 @@ function App() {
 
         <Route path="/terms" element={<TermsOfServicePage />} />
         <Route path="/privacy" element={<PrivacyPolicyPage />} />
+        <Route path="/about" element={<AboutPage />} />
+        <Route path="/contact" element={<ContactPage />} />
+        <Route path="/features" element={<FeaturesPage />} />
+        <Route path="/pricing" element={<PricingPage />} />
+        <Route path="/security" element={<SecurityPage />} />
+        <Route path="/blog" element={<BlogPage />} />
+        <Route path="/careers" element={<CareersPage />} />
+        <Route path="/help" element={<HelpCenterPage />} />
+        <Route path="/api-docs" element={<APIDocsPage />} />
+        <Route path="/cookies" element={<CookiesPage />} />
+        <Route path="/blog/student-data-management-best-practices" element={<BlogPost1 />} />
+        <Route path="/blog/future-of-education-technology" element={<BlogPost2 />} />
+        <Route path="/blog/api-integration-guide" element={<BlogPost3 />} />
+        <Route path="/blog/improving-student-engagement" element={<BlogPost4 />} />
+        <Route path="/blog/streamlining-enrollment-processes" element={<BlogPost5 />} />
+        <Route path="/blog/year-in-review-2023" element={<BlogPost6 />} />
 
         <Route path="/auth/callback" element={<AuthCallback />} />
 

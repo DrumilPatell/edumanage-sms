@@ -1,16 +1,19 @@
-import { Link } from 'react-router-dom'
+import { Link, useLocation } from 'react-router-dom'
 import { ArrowLeft, GraduationCap } from 'lucide-react'
 
 export default function TermsOfServicePage() {
+  const location = useLocation()
+  const fromLogin = location.state?.fromLogin || false
+  
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
       {/* Back Button */}
       <Link
-        to="/login"
+        to={fromLogin ? "/login" : "/"}
         className="fixed top-6 left-6 flex items-center gap-2 text-slate-400 hover:text-amber-400 transition-colors z-10"
       >
         <ArrowLeft className="w-5 h-5" />
-        <span>Back to Login</span>
+        <span>{fromLogin ? "Back to Login" : "Back to Home"}</span>
       </Link>
 
       <div className="container mx-auto px-4 py-16 max-w-4xl">
