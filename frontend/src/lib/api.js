@@ -29,8 +29,12 @@ api.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response?.status === 401) {
-      useAuthStore.getState().logout()
-      window.location.href = '/login'
+      const authStore = useAuthStore.getState()
+      // Only logout if we actually have a token (i.e., we were authenticated)
+      if (authStore.token) {
+        authStore.logout()
+        window.location.href = '/login'
+      }
     }
     return Promise.reject(error)
   }

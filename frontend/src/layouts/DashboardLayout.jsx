@@ -13,8 +13,11 @@ export default function DashboardLayout() {
   const [sidebarOpen, setSidebarOpen] = useState(false)
 
   const handleLogout = () => {
-    logout()
-    navigate('/login')
+    const confirmed = window.confirm('Are you sure you want to logout?')
+    if (confirmed) {
+      logout()
+      navigate('/login')
+    }
   }
 
   const navigation = [

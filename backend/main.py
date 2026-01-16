@@ -1,5 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import Response
 from app.core.config import settings
 from app.api.v1.router import api_router
 from app.db.database import engine
@@ -92,3 +93,9 @@ async def root():
 @app.get("/health")
 async def health_check():
     return {"status": "✅ Healthy", "database": "Connected"}
+
+
+@app.get("/favicon.ico")
+async def favicon():
+    # Return empty response with 204 No Content to avoid 404 errors
+    return Response(status_code=204)
