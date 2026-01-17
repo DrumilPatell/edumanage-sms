@@ -1,27 +1,19 @@
-"""
-Database initialization script
-Run this to create sample data for testing
-"""
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from datetime import date, datetime, timedelta
 import sys
 import os
 
-# Add app to path
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
 from app.db.models import Base, User, Student, Course, Enrollment, Attendance, Grade, RoleEnum
 from app.core.config import settings
 
-# Create engine
 engine = create_engine(settings.DATABASE_URL)
 SessionLocal = sessionmaker(bind=engine)
 
 def init_db():
-    """Initialize database with sample data"""
     
-    # Create tables
     print("Creating database tables...")
     Base.metadata.create_all(bind=engine)
     print("✓ Tables created")
@@ -29,14 +21,12 @@ def init_db():
     db = SessionLocal()
     
     try:
-        # Check if data already exists
         if db.query(User).count() > 0:
             print("Database already contains data. Skipping initialization.")
             return
         
         print("\nCreating sample data...")
         
-        # Create Admin User
         admin = User(
             email="admin@university.edu",
             full_name="John Administrator",
@@ -47,7 +37,6 @@ def init_db():
         )
         db.add(admin)
         
-        # Create Faculty Users
         faculty1 = User(
             email="dr.smith@faculty.university.edu",
             full_name="Dr. Sarah Smith",
@@ -68,7 +57,6 @@ def init_db():
         )
         db.add(faculty2)
         
-        # Create Student Users
         student_users = []
         student_names = [
             ("alice.johnson@student.edu", "Alice Johnson"),
@@ -93,7 +81,6 @@ def init_db():
         db.commit()
         print("✓ Users created")
         
-        # Create Student Profiles
         students = []
         for i, user in enumerate(student_users):
             student = Student(
@@ -113,7 +100,6 @@ def init_db():
         db.commit()
         print("✓ Student profiles created")
         
-        # Create Courses
         courses_data = [
             ("CS101", "Introduction to Programming", "Learn Python programming basics", 3, faculty1.id),
             ("CS201", "Data Structures and Algorithms", "Advanced data structures", 4, faculty1.id),
@@ -140,9 +126,7 @@ def init_db():
         db.commit()
         print("✓ Courses created")
         
-        # Create Enrollments
         enrollments = []
-        # Enroll first 3 students in CS courses
         for student in students[:3]:
             for course in courses[:2]:  # CS101 and CS201
                 enrollment = Enrollment(
@@ -153,9 +137,8 @@ def init_db():
                 db.add(enrollment)
                 enrollments.append(enrollment)
         
-        # Enroll last 2 students in BUS courses
         for student in students[3:]:
-            for course in courses[2:4]:  # BUS101 and MATH101
+            for course in courses[2:4]:
                 enrollment = Enrollment(
                     student_id=student.id,
                     course_id=course.id,
@@ -167,9 +150,8 @@ def init_db():
         db.commit()
         print("✓ Enrollments created")
         
-        # Create Attendance Records
         for enrollment in enrollments:
-            for day_offset in range(5):  # Last 5 days
+            for day_offset in range(5):
                 attendance = Attendance(
                     student_id=enrollment.student_id,
                     course_id=enrollment.course_id,
@@ -182,7 +164,6 @@ def init_db():
         db.commit()
         print("✓ Attendance records created")
         
-        # Create Grades
         assessment_types = ["midterm", "quiz", "assignment", "final"]
         for enrollment in enrollments:
             for i, assessment in enumerate(assessment_types):

@@ -3,7 +3,6 @@ from typing import Optional
 from datetime import datetime, date
 
 
-# Attendance Schemas
 class AttendanceBase(BaseModel):
     student_id: int
     course_id: int
@@ -29,7 +28,6 @@ class AttendanceResponse(AttendanceBase):
         from_attributes = True
 
 
-# Grade Schemas
 class GradeBase(BaseModel):
     student_id: int
     course_id: int

@@ -4,7 +4,6 @@ from datetime import datetime
 from app.db.models import RoleEnum
 
 
-# User Schemas
 class UserBase(BaseModel):
     email: EmailStr
     full_name: str
@@ -18,7 +17,6 @@ class UserCreate(UserBase):
 
 
 class UserRegister(BaseModel):
-    """For email/password registration"""
     email: EmailStr
     full_name: str
     password: str
@@ -26,7 +24,6 @@ class UserRegister(BaseModel):
 
 
 class UserLogin(BaseModel):
-    """For email/password login"""
     email: EmailStr
     password: str
 

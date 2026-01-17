@@ -10,7 +10,6 @@ const api = axios.create({
   },
 })
 
-// Request interceptor to add auth token
 api.interceptors.request.use(
   (config) => {
     const token = useAuthStore.getState().token
@@ -24,13 +23,11 @@ api.interceptors.request.use(
   }
 )
 
-// Response interceptor to handle errors
 api.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response?.status === 401) {
       const authStore = useAuthStore.getState()
-      // Only logout if we actually have a token (i.e., we were authenticated)
       if (authStore.token) {
         authStore.logout()
         window.location.href = '/login'

@@ -1,13 +1,11 @@
 import api from '../lib/api'
 
 export const authApi = {
-  // Get current user
   getCurrentUser: async () => {
     const response = await api.get('/auth/me')
     return response.data
   },
 
-  // Logout
   logout: async () => {
     const response = await api.post('/auth/logout')
     return response.data
@@ -133,7 +131,6 @@ export const enrollmentsApi = {
 }
 
 export const academicApi = {
-  // Attendance
   getAttendance: async (params) => {
     const response = await api.get('/academic/attendance/', { params })
     return response.data
@@ -149,7 +146,6 @@ export const academicApi = {
     return response.data
   },
 
-  // Grades
   getGrades: async (params) => {
     const response = await api.get('/academic/grades/', { params })
     return response.data

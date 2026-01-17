@@ -8,7 +8,6 @@ pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 
 def create_access_token(data: Dict[str, Any], expires_delta: Optional[timedelta] = None) -> str:
-    """Create JWT access token"""
     to_encode = data.copy()
     
     if expires_delta:
@@ -16,7 +15,6 @@ def create_access_token(data: Dict[str, Any], expires_delta: Optional[timedelta]
     else:
         expire = datetime.utcnow() + timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
     
-    # Ensure 'sub' claim is a string (JWT spec expects string subjects)
     if "sub" in to_encode and not isinstance(to_encode["sub"], str):
         to_encode["sub"] = str(to_encode["sub"])
     to_encode.update({"exp": expire})
@@ -30,7 +28,6 @@ def create_access_token(data: Dict[str, Any], expires_delta: Optional[timedelta]
 
 
 def verify_token(token: str) -> Optional[Dict[str, Any]]:
-    """Verify and decode JWT token"""
     try:
         payload = jwt.decode(token, settings.SECRET_KEY, algorithms=[settings.ALGORITHM])
         return payload
@@ -41,10 +38,8 @@ def verify_token(token: str) -> Optional[Dict[str, Any]]:
 
 
 def hash_password(password: str) -> str:
-    """Hash a password"""
     return pwd_context.hash(password)
 
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:
-    """Verify a password against hash"""
     return pwd_context.verify(plain_password, hashed_password)

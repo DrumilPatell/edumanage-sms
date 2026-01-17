@@ -13,8 +13,6 @@ from app.auth.dependencies import get_current_user, require_faculty
 router = APIRouter()
 
 
-# ==================== Attendance Endpoints ====================
-
 @router.get("/attendance/", response_model=List[AttendanceResponse])
 async def get_attendance(
     skip: int = Query(0, ge=0),
@@ -26,7 +24,6 @@ async def get_attendance(
     db: Session = Depends(get_db),
     current_user: User = Depends(require_faculty)
 ):
-    """Get attendance records (Faculty and Admin)"""
     query = db.query(Attendance)
     
     if student_id:
@@ -48,8 +45,6 @@ async def create_attendance(
     db: Session = Depends(get_db),
     current_user: User = Depends(require_faculty)
 ):
-    """Create attendance record (Faculty and Admin)"""
-    # Check if record already exists for this student, course, and date
     existing = db.query(Attendance).filter(
         Attendance.student_id == attendance.student_id,
         Attendance.course_id == attendance.course_id,
@@ -76,7 +71,6 @@ async def update_attendance(
     db: Session = Depends(get_db),
     current_user: User = Depends(require_faculty)
 ):
-    """Update attendance record (Faculty and Admin)"""
     attendance = db.query(Attendance).filter(Attendance.id == attendance_id).first()
     if not attendance:
         raise HTTPException(
@@ -93,8 +87,6 @@ async def update_attendance(
     return AttendanceResponse.model_validate(attendance)
 
 
-# ==================== Grade Endpoints ====================
-
 @router.get("/grades/", response_model=List[GradeResponse])
 async def get_grades(
     skip: int = Query(0, ge=0),
@@ -105,7 +97,6 @@ async def get_grades(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
-    """Get grade records"""
     query = db.query(Grade)
     
     if student_id:
@@ -125,10 +116,8 @@ async def create_grade(
     db: Session = Depends(get_db),
     current_user: User = Depends(require_faculty)
 ):
-    """Create grade record (Faculty and Admin)"""
     db_grade = Grade(**grade.model_dump())
     
-    # Calculate percentage
     if grade.max_score > 0:
         db_grade.percentage = (grade.score / grade.max_score) * 100
     
@@ -145,7 +134,6 @@ async def update_grade(
     db: Session = Depends(get_db),
     current_user: User = Depends(require_faculty)
 ):
-    """Update grade record (Faculty and Admin)"""
     grade = db.query(Grade).filter(Grade.id == grade_id).first()
     if not grade:
         raise HTTPException(
@@ -157,7 +145,6 @@ async def update_grade(
     for field, value in update_data.items():
         setattr(grade, field, value)
     
-    # Recalculate percentage if score or max_score changed
     if "score" in update_data or "max_score" in update_data:
         if grade.max_score > 0:
             grade.percentage = (grade.score / grade.max_score) * 100
@@ -173,7 +160,6 @@ async def delete_grade(
     db: Session = Depends(get_db),
     current_user: User = Depends(require_faculty)
 ):
-    """Delete grade record (Faculty and Admin)"""
     grade = db.query(Grade).filter(Grade.id == grade_id).first()
     if not grade:
         raise HTTPException(

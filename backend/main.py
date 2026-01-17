@@ -7,16 +7,12 @@ from app.db.database import engine
 from app.db import models
 import logging
 
-# Configure logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-# Create database tables
 models.Base.metadata.create_all(bind=engine)
 
-# Check OAuth configuration
 def check_oauth_config():
-    """Warn if OAuth credentials are not configured"""
     providers = {
         'Google': (settings.GOOGLE_CLIENT_ID, settings.GOOGLE_CLIENT_SECRET),
         'Microsoft': (settings.MICROSOFT_CLIENT_ID, settings.MICROSOFT_CLIENT_SECRET),
@@ -25,7 +21,6 @@ def check_oauth_config():
     
     configured = []
     for provider, (client_id, secret) in providers.items():
-        # Check if credentials look real (not placeholders)
         if (client_id and secret and 
             not client_id.startswith('your-') and 
             not client_id.startswith('demo-') and
@@ -58,7 +53,6 @@ app = FastAPI(
     redoc_url="/api/redoc",
 )
 
-# CORS middleware
 allowed_origins = {
     settings.FRONTEND_URL,
     "http://localhost:5173",
@@ -75,7 +69,6 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Include API router
 app.include_router(api_router, prefix="/api")
 
 
@@ -97,5 +90,4 @@ async def health_check():
 
 @app.get("/favicon.ico")
 async def favicon():
-    # Return empty response with 204 No Content to avoid 404 errors
     return Response(status_code=204)

@@ -21,7 +21,6 @@ class User(Base):
     profile_picture = Column(String(500), nullable=True)
     role = Column(Enum(RoleEnum), nullable=False, default=RoleEnum.STUDENT)
     
-    # OAuth fields
     oauth_provider = Column(String(50), nullable=True)  # google, microsoft, github
     oauth_id = Column(String(255), nullable=True)
     
@@ -29,7 +28,6 @@ class User(Base):
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
     
-    # Relationships
     student_profile = relationship("Student", back_populates="user", uselist=False, cascade="all, delete-orphan")
     faculty_courses = relationship("Course", back_populates="faculty")
     
@@ -41,12 +39,10 @@ class Student(Base):
     user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), unique=True, nullable=False)
     student_id = Column(String(50), unique=True, index=True, nullable=False)
     
-    # Personal Information
     date_of_birth = Column(Date, nullable=True)
     phone = Column(String(20), nullable=True)
     address = Column(Text, nullable=True)
     
-    # Academic Information
     enrollment_year = Column(Integer, nullable=True)
     program = Column(String(100), nullable=True)  # e.g., "Computer Science", "Engineering"
     current_semester = Column(Integer, nullable=True)
@@ -55,7 +51,6 @@ class Student(Base):
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
     
-    # Relationships
     user = relationship("User", back_populates="student_profile")
     enrollments = relationship("Enrollment", back_populates="student", cascade="all, delete-orphan")
     attendance_records = relationship("Attendance", back_populates="student", cascade="all, delete-orphan")
@@ -71,7 +66,6 @@ class Course(Base):
     description = Column(Text, nullable=True)
     credits = Column(Integer, nullable=False, default=3)
     
-    # Faculty assignment
     faculty_id = Column(Integer, ForeignKey("users.id", ondelete="SET NULL"), nullable=True)
     
     semester = Column(String(50), nullable=True)  # e.g., "Fall 2025", "Spring 2026"
@@ -81,7 +75,6 @@ class Course(Base):
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
     
-    # Relationships
     faculty = relationship("User", back_populates="faculty_courses")
     enrollments = relationship("Enrollment", back_populates="course", cascade="all, delete-orphan")
     attendance_records = relationship("Attendance", back_populates="course", cascade="all, delete-orphan")
@@ -101,7 +94,6 @@ class Enrollment(Base):
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
     
-    # Relationships
     student = relationship("Student", back_populates="enrollments")
     course = relationship("Course", back_populates="enrollments")
 
@@ -120,7 +112,6 @@ class Attendance(Base):
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
     
-    # Relationships
     student = relationship("Student", back_populates="attendance_records")
     course = relationship("Course", back_populates="attendance_records")
 
@@ -132,7 +123,6 @@ class Grade(Base):
     student_id = Column(Integer, ForeignKey("students.id", ondelete="CASCADE"), nullable=False)
     course_id = Column(Integer, ForeignKey("courses.id", ondelete="CASCADE"), nullable=False)
     
-    # Grade Information
     assessment_type = Column(String(50), nullable=False)  # midterm, final, assignment, quiz, project
     assessment_name = Column(String(255), nullable=False)
     score = Column(Float, nullable=False)
@@ -146,6 +136,5 @@ class Grade(Base):
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
     
-    # Relationships
     student = relationship("Student", back_populates="grades")
     course = relationship("Course", back_populates="grades")

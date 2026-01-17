@@ -13,10 +13,8 @@ async def get_current_user(
     credentials: HTTPAuthorizationCredentials = Depends(security),
     db: Session = Depends(get_db)
 ) -> User:
-    """Get current authenticated user from JWT token"""
     token = credentials.credentials
     payload = verify_token(token)
-    # Debug logging for auth issues
     import logging
     logger = logging.getLogger(__name__)
     logger.info("Auth debug: token len=%s payload=%s", len(token) if token else None, payload)
@@ -35,7 +33,6 @@ async def get_current_user(
             detail="Invalid authentication credentials",
         )
 
-    # The 'sub' claim may be a string (we store it as string in JWT); convert to int
     try:
         user_id = int(user_id_raw)
     except Exception:
@@ -63,12 +60,10 @@ async def get_current_user(
 async def get_current_active_user(
     current_user: User = Depends(get_current_user),
 ) -> User:
-    """Get current active user"""
     return current_user
 
 
 class RoleChecker:
-    """Dependency class for checking user roles"""
     
     def __init__(self, allowed_roles: list[RoleEnum]):
         self.allowed_roles = allowed_roles
@@ -82,7 +77,6 @@ class RoleChecker:
         return user
 
 
-# Role-based dependencies
 require_admin = RoleChecker([RoleEnum.ADMIN])
 require_faculty = RoleChecker([RoleEnum.ADMIN, RoleEnum.FACULTY])
 require_student = RoleChecker([RoleEnum.ADMIN, RoleEnum.FACULTY, RoleEnum.STUDENT])

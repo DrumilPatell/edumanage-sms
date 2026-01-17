@@ -18,7 +18,6 @@ async def get_courses(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
-    """Get all courses"""
     query = db.query(Course)
     
     if semester:
@@ -28,7 +27,6 @@ async def get_courses(
     
     courses = query.offset(skip).limit(limit).all()
     
-    # Build response with faculty info
     result = []
     for course in courses:
         course_dict = CourseResponse.model_validate(course).model_dump()
@@ -48,7 +46,6 @@ async def get_course(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
-    """Get course by ID"""
     course = db.query(Course).filter(Course.id == course_id).first()
     if not course:
         raise HTTPException(
@@ -71,8 +68,6 @@ async def create_course(
     db: Session = Depends(get_db),
     current_user: User = Depends(require_admin)
 ):
-    """Create course (Admin only)"""
-    # Check if course code exists
     existing_course = db.query(Course).filter(Course.course_code == course.course_code).first()
     if existing_course:
         raise HTTPException(
@@ -80,7 +75,6 @@ async def create_course(
             detail="Course code already exists"
         )
     
-    # Validate faculty if provided
     if course.faculty_id:
         faculty = db.query(User).filter(User.id == course.faculty_id).first()
         if not faculty or faculty.role not in ["admin", "faculty"]:
@@ -89,7 +83,6 @@ async def create_course(
                 detail="Invalid faculty ID"
             )
     
-    # Create course
     db_course = Course(**course.model_dump())
     db.add(db_course)
     db.commit()
@@ -104,7 +97,6 @@ async def update_course(
     db: Session = Depends(get_db),
     current_user: User = Depends(require_admin)
 ):
-    """Update course (Admin only)"""
     course = db.query(Course).filter(Course.id == course_id).first()
     if not course:
         raise HTTPException(
@@ -112,7 +104,6 @@ async def update_course(
             detail="Course not found"
         )
     
-    # Validate faculty if updating
     update_data = course_update.model_dump(exclude_unset=True)
     if "faculty_id" in update_data and update_data["faculty_id"]:
         faculty = db.query(User).filter(User.id == update_data["faculty_id"]).first()
@@ -122,7 +113,6 @@ async def update_course(
                 detail="Invalid faculty ID"
             )
     
-    # Update fields
     for field, value in update_data.items():
         setattr(course, field, value)
     
@@ -137,7 +127,6 @@ async def delete_course(
     db: Session = Depends(get_db),
     current_user: User = Depends(require_admin)
 ):
-    """Delete course (Admin only)"""
     course = db.query(Course).filter(Course.id == course_id).first()
     if not course:
         raise HTTPException(
@@ -155,6 +144,5 @@ async def get_my_courses(
     db: Session = Depends(get_db),
     current_user: User = Depends(require_faculty)
 ):
-    """Get courses assigned to current faculty member"""
     courses = db.query(Course).filter(Course.faculty_id == current_user.id).all()
     return [CourseResponse.model_validate(course) for course in courses]

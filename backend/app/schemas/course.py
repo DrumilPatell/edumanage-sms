@@ -3,7 +3,6 @@ from typing import Optional
 from datetime import datetime
 
 
-# Course Schemas
 class CourseBase(BaseModel):
     course_code: str = Field(..., description="Unique course code")
     course_name: str

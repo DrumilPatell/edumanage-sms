@@ -3,7 +3,6 @@ from typing import Optional
 from datetime import datetime
 
 
-# Enrollment Schemas
 class EnrollmentBase(BaseModel):
     student_id: int
     course_id: int
@@ -15,6 +14,7 @@ class EnrollmentCreate(EnrollmentBase):
 
 class EnrollmentUpdate(BaseModel):
     status: Optional[str] = None  # active, completed, dropped, withdrawn
+
 
 
 class EnrollmentResponse(EnrollmentBase):

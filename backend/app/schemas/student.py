@@ -3,7 +3,6 @@ from typing import Optional
 from datetime import datetime, date
 
 
-# Student Schemas
 class StudentBase(BaseModel):
     student_id: str = Field(..., description="Unique student ID")
     date_of_birth: Optional[date] = None

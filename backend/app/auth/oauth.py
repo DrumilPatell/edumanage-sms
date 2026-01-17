@@ -4,24 +4,19 @@ from app.core.config import settings
 
 
 class OAuthProvider:
-    """Base OAuth provider class"""
     
     async def verify_token(self, token: str) -> Optional[Dict]:
-        """Verify OAuth token and return user info"""
         raise NotImplementedError
 
 
 class GoogleOAuth(OAuthProvider):
-    """Google OAuth provider"""
     
     TOKEN_INFO_URL = "https://oauth2.googleapis.com/tokeninfo"
     USERINFO_URL = "https://www.googleapis.com/oauth2/v2/userinfo"
     
     async def verify_token(self, access_token: str) -> Optional[Dict]:
-        """Verify Google OAuth token"""
         async with httpx.AsyncClient() as client:
             try:
-                # Get user info from Google
                 response = await client.get(
                     self.USERINFO_URL,
                     headers={"Authorization": f"Bearer {access_token}"}
@@ -44,16 +39,13 @@ class GoogleOAuth(OAuthProvider):
 
 
 class MicrosoftOAuth(OAuthProvider):
-    """Microsoft OAuth provider"""
     
     USERINFO_URL = "https://graph.microsoft.com/v1.0/me"
     PHOTO_URL = "https://graph.microsoft.com/v1.0/me/photo/$value"
     
     async def verify_token(self, access_token: str) -> Optional[Dict]:
-        """Verify Microsoft OAuth token"""
         async with httpx.AsyncClient() as client:
             try:
-                # Get user info from Microsoft Graph
                 response = await client.get(
                     self.USERINFO_URL,
                     headers={"Authorization": f"Bearer {access_token}"}
@@ -64,7 +56,6 @@ class MicrosoftOAuth(OAuthProvider):
                 
                 user_info = response.json()
                 
-                # Try to get profile photo
                 profile_picture = None
                 try:
                     photo_response = await client.get(
@@ -72,8 +63,6 @@ class MicrosoftOAuth(OAuthProvider):
                         headers={"Authorization": f"Bearer {access_token}"}
                     )
                     if photo_response.status_code == 200:
-                        # In production, you'd upload this to cloud storage
-                        # For now, we'll skip the photo
                         pass
                 except Exception:
                     pass
@@ -90,16 +79,13 @@ class MicrosoftOAuth(OAuthProvider):
 
 
 class GitHubOAuth(OAuthProvider):
-    """GitHub OAuth provider"""
     
     USERINFO_URL = "https://api.github.com/user"
     EMAILS_URL = "https://api.github.com/user/emails"
     
     async def verify_token(self, access_token: str) -> Optional[Dict]:
-        """Verify GitHub OAuth token"""
         async with httpx.AsyncClient() as client:
             try:
-                # Get user info from GitHub
                 response = await client.get(
                     self.USERINFO_URL,
                     headers={
@@ -113,7 +99,6 @@ class GitHubOAuth(OAuthProvider):
                 
                 user_info = response.json()
                 
-                # Get primary email if not public
                 email = user_info.get("email")
                 if not email:
                     emails_response = await client.get(
@@ -143,14 +128,12 @@ class GitHubOAuth(OAuthProvider):
                 return None
 
 
-# OAuth provider instances
 google_oauth = GoogleOAuth()
 microsoft_oauth = MicrosoftOAuth()
 github_oauth = GitHubOAuth()
 
 
 def get_oauth_provider(provider: str) -> Optional[OAuthProvider]:
-    """Get OAuth provider instance"""
     providers = {
         "google": google_oauth,
         "microsoft": microsoft_oauth,

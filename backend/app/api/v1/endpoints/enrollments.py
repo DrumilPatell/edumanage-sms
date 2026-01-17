@@ -21,7 +21,6 @@ async def get_enrollments(
     db: Session = Depends(get_db),
     current_user: User = Depends(require_faculty)
 ):
-    """Get all enrollments (Faculty and Admin)"""
     query = db.query(Enrollment).join(Student).join(Course)
     
     if student_id:
@@ -33,7 +32,6 @@ async def get_enrollments(
     
     enrollments = query.offset(skip).limit(limit).all()
     
-    # Build response with details
     result = []
     for enrollment in enrollments:
         enrollment_dict = EnrollmentResponse.model_validate(enrollment).model_dump()
@@ -54,8 +52,6 @@ async def create_enrollment(
     db: Session = Depends(get_db),
     current_user: User = Depends(require_admin)
 ):
-    """Enroll student in course (Admin only)"""
-    # Check if student exists
     student = db.query(Student).filter(Student.id == enrollment.student_id).first()
     if not student:
         raise HTTPException(
@@ -63,7 +59,6 @@ async def create_enrollment(
             detail="Student not found"
         )
     
-    # Check if course exists
     course = db.query(Course).filter(Course.id == enrollment.course_id).first()
     if not course:
         raise HTTPException(
@@ -71,7 +66,6 @@ async def create_enrollment(
             detail="Course not found"
         )
     
-    # Check if already enrolled
     existing = db.query(Enrollment).filter(
         Enrollment.student_id == enrollment.student_id,
         Enrollment.course_id == enrollment.course_id
@@ -82,7 +76,6 @@ async def create_enrollment(
             detail="Student already enrolled in this course"
         )
     
-    # Create enrollment
     db_enrollment = Enrollment(**enrollment.model_dump())
     db.add(db_enrollment)
     db.commit()
@@ -97,7 +90,6 @@ async def update_enrollment(
     db: Session = Depends(get_db),
     current_user: User = Depends(require_admin)
 ):
-    """Update enrollment status (Admin only)"""
     enrollment = db.query(Enrollment).filter(Enrollment.id == enrollment_id).first()
     if not enrollment:
         raise HTTPException(
@@ -105,7 +97,6 @@ async def update_enrollment(
             detail="Enrollment not found"
         )
     
-    # Update fields
     update_data = enrollment_update.model_dump(exclude_unset=True)
     for field, value in update_data.items():
         setattr(enrollment, field, value)
@@ -121,7 +112,6 @@ async def delete_enrollment(
     db: Session = Depends(get_db),
     current_user: User = Depends(require_admin)
 ):
-    """Delete enrollment (Admin only)"""
     enrollment = db.query(Enrollment).filter(Enrollment.id == enrollment_id).first()
     if not enrollment:
         raise HTTPException(
@@ -140,8 +130,6 @@ async def get_student_enrollments(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
-    """Get all courses a student is enrolled in"""
-    # Students can only view their own enrollments
     if current_user.role == "student":
         student = db.query(Student).filter(Student.user_id == current_user.id).first()
         if not student or student.id != student_id:

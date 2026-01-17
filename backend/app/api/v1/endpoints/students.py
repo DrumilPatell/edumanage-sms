@@ -18,7 +18,6 @@ async def get_students(
     db: Session = Depends(get_db),
     current_user: User = Depends(require_faculty)
 ):
-    """Get all students (Faculty and Admin)"""
     query = db.query(Student).join(User)
     
     if program:
@@ -28,7 +27,6 @@ async def get_students(
     
     students = query.offset(skip).limit(limit).all()
     
-    # Build response with user info
     result = []
     for student in students:
         student_dict = StudentResponse.model_validate(student).model_dump()
@@ -49,7 +47,6 @@ async def get_student(
     db: Session = Depends(get_db),
     current_user: User = Depends(require_faculty)
 ):
-    """Get student by ID (Faculty and Admin)"""
     student = db.query(Student).filter(Student.id == student_id).first()
     if not student:
         raise HTTPException(
@@ -73,8 +70,6 @@ async def create_student(
     db: Session = Depends(get_db),
     current_user: User = Depends(require_faculty)
 ):
-    """Create student profile (Admin and Faculty)"""
-    # Check if user exists
     user = db.query(User).filter(User.id == student.user_id).first()
     if not user:
         raise HTTPException(
@@ -82,7 +77,6 @@ async def create_student(
             detail="User not found"
         )
     
-    # Check if student already exists for this user
     existing_student = db.query(Student).filter(Student.user_id == student.user_id).first()
     if existing_student:
         raise HTTPException(
@@ -90,7 +84,6 @@ async def create_student(
             detail="Student profile already exists for this user"
         )
     
-    # Check if student_id is unique
     existing_student_id = db.query(Student).filter(Student.student_id == student.student_id).first()
     if existing_student_id:
         raise HTTPException(
@@ -98,11 +91,9 @@ async def create_student(
             detail="Student ID already exists"
         )
     
-    # Create student
     db_student = Student(**student.model_dump())
     db.add(db_student)
     
-    # Update user role to student if not already
     if user.role != RoleEnum.STUDENT:
         user.role = RoleEnum.STUDENT
     
@@ -118,7 +109,6 @@ async def update_student(
     db: Session = Depends(get_db),
     current_user: User = Depends(require_admin)
 ):
-    """Update student (Admin only)"""
     student = db.query(Student).filter(Student.id == student_id).first()
     if not student:
         raise HTTPException(
@@ -126,7 +116,6 @@ async def update_student(
             detail="Student not found"
         )
     
-    # Update fields
     update_data = student_update.model_dump(exclude_unset=True)
     for field, value in update_data.items():
         setattr(student, field, value)
@@ -142,7 +131,6 @@ async def delete_student(
     db: Session = Depends(get_db),
     current_user: User = Depends(require_admin)
 ):
-    """Delete student (Admin only)"""
     student = db.query(Student).filter(Student.id == student_id).first()
     if not student:
         raise HTTPException(
@@ -160,7 +148,6 @@ async def get_my_student_profile(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
-    """Get current user's student profile"""
     student = db.query(Student).filter(Student.user_id == current_user.id).first()
     if not student:
         raise HTTPException(

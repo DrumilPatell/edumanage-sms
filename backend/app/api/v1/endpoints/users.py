@@ -18,7 +18,6 @@ async def get_users(
     db: Session = Depends(get_db),
     current_user: User = Depends(require_admin)
 ):
-    """Get all users (Admin only)"""
     query = db.query(User)
     
     if role:
@@ -36,7 +35,6 @@ async def get_user(
     db: Session = Depends(get_db),
     current_user: User = Depends(require_admin)
 ):
-    """Get user by ID (Admin only)"""
     user = db.query(User).filter(User.id == user_id).first()
     if not user:
         raise HTTPException(
@@ -53,7 +51,6 @@ async def update_user(
     db: Session = Depends(get_db),
     current_user: User = Depends(require_admin)
 ):
-    """Update user (Admin only)"""
     user = db.query(User).filter(User.id == user_id).first()
     if not user:
         raise HTTPException(
@@ -61,7 +58,6 @@ async def update_user(
             detail="User not found"
         )
     
-    # Update fields
     update_data = user_update.model_dump(exclude_unset=True)
     for field, value in update_data.items():
         setattr(user, field, value)
@@ -77,7 +73,6 @@ async def delete_user(
     db: Session = Depends(get_db),
     current_user: User = Depends(require_admin)
 ):
-    """Delete user (Admin only)"""
     user = db.query(User).filter(User.id == user_id).first()
     if not user:
         raise HTTPException(
@@ -85,7 +80,6 @@ async def delete_user(
             detail="User not found"
         )
     
-    # Don't allow deleting yourself
     if user.id == current_user.id:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
