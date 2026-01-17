@@ -52,32 +52,6 @@ A complete student management system built with modern technologies, featuring O
 - Attendance records
 - Student dashboard
 
-## 📁 Project Structure
-
-```
-sms-system/
-├── backend/
-│   ├── app/
-│   │   ├── api/v1/endpoints/    # API routes
-│   │   ├── auth/                # Authentication logic
-│   │   ├── core/                # Config & security
-│   │   ├── db/                  # Database models
-│   │   └── schemas/             # Pydantic schemas
-│   ├── main.py
-│   ├── requirements.txt
-│   └── README.md
-│
-└── frontend/
-    ├── src/
-    │   ├── layouts/             # Dashboard layout
-    │   ├── pages/               # All pages
-    │   ├── services/            # API services
-    │   ├── store/               # State management
-    │   └── lib/                 # Utilities
-    ├── package.json
-    └── README.md
-```
-
 ## 🛠️ Setup Instructions
 
 ### Prerequisites
