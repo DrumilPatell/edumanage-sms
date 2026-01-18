@@ -120,7 +120,7 @@ export default function TermsOfServicePage() {
           <section>
             <h2 className="text-2xl font-semibold text-white mb-3">10. Contact Us</h2>
             <p className="leading-relaxed">
-              If you have any questions about these Terms, please contact us at support@studentmanagementsystem.com
+              If you have any questions about these Terms, please contact us at drumilpatel0987@gmail.com
             </p>
           </section>
 
@@ -128,7 +128,7 @@ export default function TermsOfServicePage() {
 
         {/* Footer */}
         <div className="mt-8 text-center text-slate-500 text-sm">
-          © 2025 Student Management System. All rights reserved.
+          © 2026 Student Management System. All rights reserved.
         </div>
       </div>
     </div>

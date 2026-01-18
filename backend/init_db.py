@@ -117,7 +117,7 @@ def init_db():
                 credits=credits,
                 faculty_id=fac_id,
                 semester="Fall 2024",
-                academic_year="2024-2025",
+                academic_year="2025-2026",
                 is_active=True
             )
             db.add(course)

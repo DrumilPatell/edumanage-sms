@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException, status, Query
 from sqlalchemy.orm import Session
-from typing import List
+from typing import List, Optional
 from datetime import date
 from app.db.database import get_db
 from app.db.models import User, Attendance, Grade
@@ -17,10 +17,10 @@ router = APIRouter()
 async def get_attendance(
     skip: int = Query(0, ge=0),
     limit: int = Query(100, ge=1, le=100),
-    student_id: int = None,
-    course_id: int = None,
-    date_from: date = None,
-    date_to: date = None,
+    student_id: Optional[int] = None,
+    course_id: Optional[int] = None,
+    date_from: Optional[date] = None,
+    date_to: Optional[date] = None,
     db: Session = Depends(get_db),
     current_user: User = Depends(require_faculty)
 ):
@@ -91,9 +91,9 @@ async def update_attendance(
 async def get_grades(
     skip: int = Query(0, ge=0),
     limit: int = Query(100, ge=1, le=100),
-    student_id: int = None,
-    course_id: int = None,
-    assessment_type: str = None,
+    student_id: Optional[int] = None,
+    course_id: Optional[int] = None,
+    assessment_type: Optional[str] = None,
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
@@ -119,7 +119,8 @@ async def create_grade(
     db_grade = Grade(**grade.model_dump())
     
     if grade.max_score > 0:
-        db_grade.percentage = (grade.score / grade.max_score) * 100
+        percentage_value = (grade.score / grade.max_score) * 100
+        setattr(db_grade, 'percentage', percentage_value)
     
     db.add(db_grade)
     db.commit()
@@ -146,8 +147,11 @@ async def update_grade(
         setattr(grade, field, value)
     
     if "score" in update_data or "max_score" in update_data:
-        if grade.max_score > 0:
-            grade.percentage = (grade.score / grade.max_score) * 100
+        max_score_val = getattr(grade, 'max_score', 0)
+        if max_score_val > 0:
+            score_val = getattr(grade, 'score', 0)
+            percentage_value = (score_val / max_score_val) * 100
+            setattr(grade, 'percentage', percentage_value)
     
     db.commit()
     db.refresh(grade)

@@ -249,7 +249,7 @@ export default function LandingPage() {
                 </span>
               </div>
               <p className="text-slate-400 text-sm">
-                Premium student management for modern institutions.
+                Premium Student Management System for modern institutions.
               </p>
             </div>
             <div>
@@ -279,7 +279,7 @@ export default function LandingPage() {
           </div>
           <div className="pt-8 border-t border-slate-800 flex flex-col md:flex-row justify-between items-center gap-4">
             <p className="text-slate-400 text-sm">
-              © 2025 EduManage. All rights reserved.
+              © 2026 EduManage. All rights reserved.
             </p>
             <div className="flex gap-6 text-slate-400 text-sm">
               <Link to="/privacy" className="hover:text-amber-400 transition-colors">Privacy</Link>

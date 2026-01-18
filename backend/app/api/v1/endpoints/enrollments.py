@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException, status, Query
 from sqlalchemy.orm import Session
-from typing import List
+from typing import List, Optional
 from app.db.database import get_db
 from app.db.models import User, Student, Course, Enrollment
 from app.schemas.enrollment import (
@@ -15,9 +15,9 @@ router = APIRouter()
 async def get_enrollments(
     skip: int = Query(0, ge=0),
     limit: int = Query(100, ge=1, le=100),
-    student_id: int = None,
-    course_id: int = None,
-    status: str = None,
+    student_id: Optional[int] = None,
+    course_id: Optional[int] = None,
+    status: Optional[str] = None,
     db: Session = Depends(get_db),
     current_user: User = Depends(require_faculty)
 ):
@@ -130,9 +130,10 @@ async def get_student_enrollments(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
-    if current_user.role == "student":
+    user_role = str(current_user.role)
+    if user_role == "student":
         student = db.query(Student).filter(Student.user_id == current_user.id).first()
-        if not student or student.id != student_id:
+        if not student or getattr(student, 'id', None) != student_id:
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
                 detail="Access forbidden"

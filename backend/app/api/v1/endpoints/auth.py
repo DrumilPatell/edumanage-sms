@@ -125,6 +125,11 @@ async def oauth_callback(
             )
     
     oauth_provider = get_oauth_provider(provider)
+    if not oauth_provider:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Invalid OAuth provider: {provider}"
+        )
     user_data = await oauth_provider.verify_token(access_token)
     
     if not user_data:
@@ -239,19 +244,22 @@ async def login(
             detail="Invalid email or password"
         )
     
-    if not user.hashed_password:
+    hashed_pwd = getattr(user, 'hashed_password', None)
+    
+    if not hashed_pwd:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="This account uses OAuth login. Please login with Google, Microsoft, or GitHub."
         )
     
-    if not verify_password(credentials.password, user.hashed_password):
+    if not verify_password(credentials.password, hashed_pwd):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid email or password"
         )
     
-    if not user.is_active:
+    is_active = bool(user.is_active)
+    if not is_active:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Account is inactive"

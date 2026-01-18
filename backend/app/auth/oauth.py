@@ -43,6 +43,14 @@ class MicrosoftOAuth(OAuthProvider):
     USERINFO_URL = "https://graph.microsoft.com/v1.0/me"
     PHOTO_URL = "https://graph.microsoft.com/v1.0/me/photo/$value"
     
+    @staticmethod
+    def normalize_microsoft_email(email: str) -> str:
+        if "#EXT#@" in email:
+            parts = email.split("#EXT#@")[0]
+            normalized = parts.replace("_", "@")
+            return normalized
+        return email
+    
     async def verify_token(self, access_token: str) -> Optional[Dict]:
         async with httpx.AsyncClient() as client:
             try:
@@ -67,9 +75,12 @@ class MicrosoftOAuth(OAuthProvider):
                 except Exception:
                     pass
                 
+                raw_email = user_info.get("userPrincipalName") or user_info.get("mail")
+                normalized_email = self.normalize_microsoft_email(raw_email) if raw_email else None
+                
                 return {
                     "oauth_id": user_info.get("id"),
-                    "email": user_info.get("userPrincipalName") or user_info.get("mail"),
+                    "email": normalized_email,
                     "full_name": user_info.get("displayName"),
                     "profile_picture": profile_picture,
                     "provider": "microsoft"

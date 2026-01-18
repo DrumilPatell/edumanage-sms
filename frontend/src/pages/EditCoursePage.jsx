@@ -157,10 +157,9 @@ export default function EditCoursePage() {
               className="input-field"
             >
               <option value="">Select Semester</option>
-              <option value="Fall 2024">Fall 2024</option>
-              <option value="Spring 2025">Spring 2025</option>
-              <option value="Summer 2025">Summer 2025</option>
-              <option value="Fall 2025">Fall 2025</option>
+              <option value="Spring 2026">Spring 2026</option>
+              <option value="Summer 2026">Summer 2026</option>
+              <option value="Fall 2026">Fall 2026</option>
             </select>
           </div>
 

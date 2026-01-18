@@ -68,8 +68,8 @@ class Course(Base):
     
     faculty_id = Column(Integer, ForeignKey("users.id", ondelete="SET NULL"), nullable=True)
     
-    semester = Column(String(50), nullable=True)  # e.g., "Fall 2025", "Spring 2026"
-    academic_year = Column(String(20), nullable=True)  # e.g., "2025-2026"
+    semester = Column(String(50), nullable=True)
+    academic_year = Column(String(20), nullable=True)
     
     is_active = Column(Boolean, default=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now())

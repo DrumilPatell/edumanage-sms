@@ -174,8 +174,8 @@ export default function PrivacyPolicyPage() {
               If you have any questions about this Privacy Policy or our data practices, please contact us at:
             </p>
             <div className="ml-4 mt-3 space-y-1">
-              <p>Email: privacy@studentmanagementsystem.com</p>
-              <p>Support: support@studentmanagementsystem.com</p>
+              <p>Email: drumilpatel0987@gmail.com</p>
+              <p>Support: drumilpatel0987@gmail.com</p>
             </div>
           </section>
 
@@ -183,7 +183,7 @@ export default function PrivacyPolicyPage() {
 
         {/* Footer */}
         <div className="mt-8 text-center text-slate-500 text-sm">
-          © 2025 Student Management System. All rights reserved.
+          © 2026 Student Management System. All rights reserved.
         </div>
       </div>
     </div>
