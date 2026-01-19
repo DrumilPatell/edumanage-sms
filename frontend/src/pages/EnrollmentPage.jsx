@@ -11,6 +11,13 @@ const EnrollmentPage = () => {
     course_id: '',
     enrollment_date: new Date().toISOString().split('T')[0]
   });
+  const [displayDate, setDisplayDate] = useState(() => {
+    const today = new Date();
+    const day = String(today.getDate()).padStart(2, '0');
+    const month = String(today.getMonth() + 1).padStart(2, '0');
+    const year = today.getFullYear();
+    return `${day}-${month}-${year}`;
+  });
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [loading, setLoading] = useState(false);
@@ -55,11 +62,35 @@ const EnrollmentPage = () => {
   };
 
   const handleChange = (e) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value
-    });
+    const { name, value } = e.target;
+    if (name === 'enrollment_date') {
+      setFormData({
+        ...formData,
+        enrollment_date: value
+      });
+      if (value) {
+        const [year, month, day] = value.split('-');
+        setDisplayDate(`${day}-${month}-${year}`);
+      }
+    } else {
+      setFormData({
+        ...formData,
+        [name]: value
+      });
+    }
     setError('');
+  };
+
+  const handleDisplayDateChange = (e) => {
+    const value = e.target.value;
+    setDisplayDate(value);
+    if (value.length === 10) {
+      const [day, month, year] = value.split('-');
+      setFormData({
+        ...formData,
+        enrollment_date: `${year}-${month}-${day}`
+      });
+    }
   };
 
   const handleSubmit = async (e) => {
@@ -196,15 +227,38 @@ const EnrollmentPage = () => {
                 Enrollment Date
               </label>
               <div className="relative">
-                <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400 pointer-events-none" />
+                <Calendar 
+                  className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400 cursor-pointer hover:text-amber-400 transition-colors z-10" 
+                  onClick={() => document.getElementById('enrollment_date_picker').showPicker()}
+                />
                 <input
                   type="date"
+                  id="enrollment_date_picker"
                   name="enrollment_date"
                   value={formData.enrollment_date}
                   onChange={handleChange}
                   required
-                  className="w-full pl-11 pr-4 py-3 bg-slate-700 border border-slate-600 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent"
+                  className="absolute left-0 top-0 w-11 h-full opacity-0 cursor-pointer z-20"
                   style={{ colorScheme: 'dark' }}
+                />
+                <input
+                  type="text"
+                  name="display_enrollment_date"
+                  value={displayDate}
+                  onChange={handleDisplayDateChange}
+                  placeholder="dd-mm-yyyy"
+                  maxLength="10"
+                  className="w-full pl-11 pr-4 py-3 bg-slate-700 border border-slate-600 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent"
+                  onInput={(e) => {
+                    let value = e.target.value.replace(/[^\d]/g, '');
+                    if (value.length >= 2) {
+                      value = value.slice(0, 2) + '-' + value.slice(2);
+                    }
+                    if (value.length >= 5) {
+                      value = value.slice(0, 5) + '-' + value.slice(5, 9);
+                    }
+                    e.target.value = value;
+                  }}
                 />
               </div>
             </div>

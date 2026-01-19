@@ -14,7 +14,13 @@ class StudentBase(BaseModel):
 
 
 class StudentCreate(StudentBase):
-    user_id: int
+    user_id: Optional[int] = None
+
+
+class StudentCreateWithUser(StudentBase):
+    email: str
+    full_name: str
+    password: Optional[str] = None
 
 
 class StudentUpdate(BaseModel):

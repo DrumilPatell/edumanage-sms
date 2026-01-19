@@ -16,7 +16,7 @@ export default function DashboardLayout() {
     const confirmed = window.confirm('Are you sure you want to logout?')
     if (confirmed) {
       logout()
-      navigate('/login')
+      navigate('/')
     }
   }
 

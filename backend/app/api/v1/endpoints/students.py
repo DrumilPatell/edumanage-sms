@@ -3,8 +3,9 @@ from sqlalchemy.orm import Session
 from typing import List, Optional
 from app.db.database import get_db
 from app.db.models import User, Student, RoleEnum
-from app.schemas.student import StudentCreate, StudentUpdate, StudentResponse, StudentWithUser
+from app.schemas.student import StudentCreate, StudentCreateWithUser, StudentUpdate, StudentResponse, StudentWithUser
 from app.auth.dependencies import get_current_user, require_admin, require_faculty
+from app.core.security import hash_password
 
 router = APIRouter()
 
@@ -70,19 +71,20 @@ async def create_student(
     db: Session = Depends(get_db),
     current_user: User = Depends(require_faculty)
 ):
-    user = db.query(User).filter(User.id == student.user_id).first()
-    if not user:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="User not found"
-        )
-    
-    existing_student = db.query(Student).filter(Student.user_id == student.user_id).first()
-    if existing_student:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Student profile already exists for this user"
-        )
+    if student.user_id:
+        user = db.query(User).filter(User.id == student.user_id).first()
+        if not user:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="User not found"
+            )
+        
+        existing_student = db.query(Student).filter(Student.user_id == student.user_id).first()
+        if existing_student:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Student profile already exists for this user"
+            )
     
     existing_student_id = db.query(Student).filter(Student.student_id == student.student_id).first()
     if existing_student_id:
@@ -91,15 +93,101 @@ async def create_student(
             detail="Student ID already exists"
         )
     
-    db_student = Student(**student.model_dump())
+    student_data = student.model_dump()
+    if not student_data.get('user_id'):
+        student_data.pop('user_id', None)
+        db_student = Student(**student_data)
+    else:
+        db_student = Student(**student_data)
+        user = db.query(User).filter(User.id == student.user_id).first()
+        if user and user.role != RoleEnum.STUDENT:
+            user.role = RoleEnum.STUDENT
+    
     db.add(db_student)
-    
-    if user.role != RoleEnum.STUDENT:
-        user.role = RoleEnum.STUDENT
-    
     db.commit()
     db.refresh(db_student)
     return StudentResponse.model_validate(db_student)
+
+
+@router.post("/with-user", response_model=StudentWithUser, status_code=status.HTTP_201_CREATED)
+async def create_student_with_user(
+    student: StudentCreateWithUser,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_faculty)
+):
+    existing_student_id = db.query(Student).filter(Student.student_id == student.student_id).first()
+    if existing_student_id:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Student ID already exists"
+        )
+    
+    existing_user = db.query(User).filter(User.email == student.email).first()
+    
+    if existing_user:
+        existing_student = db.query(Student).filter(Student.user_id == existing_user.id).first()
+        if existing_student:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="A student profile already exists for this email"
+            )
+        
+        db_student = Student(
+            user_id=existing_user.id,
+            student_id=student.student_id,
+            date_of_birth=student.date_of_birth,
+            phone=student.phone,
+            address=student.address,
+            enrollment_year=student.enrollment_year,
+            program=student.program,
+            current_semester=student.current_semester
+        )
+        db.add(db_student)
+        db.commit()
+        db.refresh(db_student)
+        
+        student_dict = StudentResponse.model_validate(db_student).model_dump()
+        student_dict.update({
+            "email": existing_user.email,
+            "full_name": existing_user.full_name,
+            "profile_picture": existing_user.profile_picture,
+            "is_active": existing_user.is_active
+        })
+        return StudentWithUser(**student_dict)
+    
+    new_user = User(
+        email=student.email,
+        full_name=student.full_name,
+        hashed_password=hash_password(student.password or "Student@123"),
+        role=RoleEnum.STUDENT,
+        is_active=True
+    )
+    db.add(new_user)
+    db.flush()
+    
+    db_student = Student(
+        user_id=new_user.id,
+        student_id=student.student_id,
+        date_of_birth=student.date_of_birth,
+        phone=student.phone,
+        address=student.address,
+        enrollment_year=student.enrollment_year,
+        program=student.program,
+        current_semester=student.current_semester
+    )
+    db.add(db_student)
+    db.commit()
+    db.refresh(db_student)
+    db.refresh(new_user)
+    
+    student_dict = StudentResponse.model_validate(db_student).model_dump()
+    student_dict.update({
+        "email": new_user.email,
+        "full_name": new_user.full_name,
+        "profile_picture": new_user.profile_picture,
+        "is_active": new_user.is_active
+    })
+    return StudentWithUser(**student_dict)
 
 
 @router.patch("/{student_id}", response_model=StudentResponse)

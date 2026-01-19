@@ -55,6 +55,11 @@ export const studentsApi = {
     return response.data
   },
 
+  createStudentWithUser: async (data) => {
+    const response = await api.post('/students/with-user', data)
+    return response.data
+  },
+
   updateStudent: async (id, data) => {
     const response = await api.patch(`/students/${id}`, data)
     return response.data
