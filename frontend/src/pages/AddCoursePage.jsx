@@ -67,7 +67,7 @@ const AddCoursePage = () => {
 
           {mutation.isSuccess && (
             <div className="mb-6 p-4 bg-green-500/10 border border-green-500/50 rounded-lg text-green-400">
-              Course added successfully! Redirecting...
+              Course added successfully!
             </div>
           )}
 
