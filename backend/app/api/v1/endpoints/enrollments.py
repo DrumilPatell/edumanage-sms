@@ -38,12 +38,37 @@ async def get_enrollments(
         enrollment_dict.update({
             "student_name": enrollment.student.user.full_name,
             "student_email": enrollment.student.user.email,
+            "student_code": enrollment.student.student_id,
             "course_name": enrollment.course.course_name,
             "course_code": enrollment.course.course_code
         })
         result.append(EnrollmentWithDetails(**enrollment_dict))
     
     return result
+
+
+@router.get("/{enrollment_id}", response_model=EnrollmentWithDetails)
+async def get_enrollment(
+    enrollment_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_faculty)
+):
+    enrollment = db.query(Enrollment).filter(Enrollment.id == enrollment_id).first()
+    if not enrollment:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Enrollment not found"
+        )
+    
+    enrollment_dict = EnrollmentResponse.model_validate(enrollment).model_dump()
+    enrollment_dict.update({
+        "student_name": enrollment.student.user.full_name,
+        "student_email": enrollment.student.user.email,
+        "student_code": enrollment.student.student_id,
+        "course_name": enrollment.course.course_name,
+        "course_code": enrollment.course.course_code
+    })
+    return EnrollmentWithDetails(**enrollment_dict)
 
 
 @router.post("/", response_model=EnrollmentResponse, status_code=status.HTTP_201_CREATED)
@@ -76,7 +101,9 @@ async def create_enrollment(
             detail="Student already enrolled in this course"
         )
     
-    db_enrollment = Enrollment(**enrollment.model_dump())
+    # Get enrollment data, excluding None values so defaults apply
+    enrollment_data = {k: v for k, v in enrollment.model_dump().items() if v is not None}
+    db_enrollment = Enrollment(**enrollment_data)
     db.add(db_enrollment)
     db.commit()
     db.refresh(db_enrollment)

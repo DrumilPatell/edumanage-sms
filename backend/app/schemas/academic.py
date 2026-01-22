@@ -16,6 +16,9 @@ class AttendanceCreate(AttendanceBase):
 
 
 class AttendanceUpdate(BaseModel):
+    student_id: Optional[int] = None
+    course_id: Optional[int] = None
+    date: Optional[date] = None
     status: Optional[str] = None
     notes: Optional[str] = None
 
@@ -26,6 +29,12 @@ class AttendanceResponse(AttendanceBase):
     
     class Config:
         from_attributes = True
+
+
+class AttendanceWithDetails(AttendanceResponse):
+    student_name: Optional[str] = None
+    course_name: Optional[str] = None
+    course_code: Optional[str] = None
 
 
 class GradeBase(BaseModel):

@@ -3,9 +3,9 @@ from sqlalchemy.orm import Session
 from typing import List, Optional
 from datetime import date
 from app.db.database import get_db
-from app.db.models import User, Attendance, Grade
+from app.db.models import User, Attendance, Grade, Student, Course
 from app.schemas.academic import (
-    AttendanceCreate, AttendanceUpdate, AttendanceResponse,
+    AttendanceCreate, AttendanceUpdate, AttendanceResponse, AttendanceWithDetails,
     GradeCreate, GradeUpdate, GradeResponse
 )
 from app.auth.dependencies import get_current_user, require_faculty
@@ -13,10 +13,10 @@ from app.auth.dependencies import get_current_user, require_faculty
 router = APIRouter()
 
 
-@router.get("/attendance/", response_model=List[AttendanceResponse])
+@router.get("/attendance/", response_model=List[AttendanceWithDetails])
 async def get_attendance(
     skip: int = Query(0, ge=0),
-    limit: int = Query(100, ge=1, le=100),
+    limit: int = Query(500, ge=1, le=500),
     student_id: Optional[int] = None,
     course_id: Optional[int] = None,
     date_from: Optional[date] = None,
@@ -35,8 +35,29 @@ async def get_attendance(
     if date_to:
         query = query.filter(Attendance.date <= date_to)
     
-    attendance = query.offset(skip).limit(limit).all()
-    return [AttendanceResponse.model_validate(record) for record in attendance]
+    attendance_records = query.order_by(Attendance.date.desc()).offset(skip).limit(limit).all()
+    
+    # Fetch student and course details
+    result = []
+    for record in attendance_records:
+        student = db.query(Student).filter(Student.id == record.student_id).first()
+        course = db.query(Course).filter(Course.id == record.course_id).first()
+        
+        record_dict = {
+            "id": record.id,
+            "student_id": record.student_id,
+            "course_id": record.course_id,
+            "date": record.date,
+            "status": record.status,
+            "notes": record.notes,
+            "created_at": record.created_at,
+            "student_name": student.full_name if student else f"Student {record.student_id}",
+            "course_name": course.course_name if course else f"Course {record.course_id}",
+            "course_code": course.course_code if course else ""
+        }
+        result.append(AttendanceWithDetails(**record_dict))
+    
+    return result
 
 
 @router.post("/attendance/", response_model=AttendanceResponse, status_code=status.HTTP_201_CREATED)
@@ -64,6 +85,21 @@ async def create_attendance(
     return AttendanceResponse.model_validate(db_attendance)
 
 
+@router.get("/attendance/{attendance_id}", response_model=AttendanceResponse)
+async def get_attendance_by_id(
+    attendance_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_faculty)
+):
+    attendance = db.query(Attendance).filter(Attendance.id == attendance_id).first()
+    if not attendance:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Attendance record not found"
+        )
+    return AttendanceResponse.model_validate(attendance)
+
+
 @router.patch("/attendance/{attendance_id}", response_model=AttendanceResponse)
 async def update_attendance(
     attendance_id: int,
@@ -85,6 +121,47 @@ async def update_attendance(
     db.commit()
     db.refresh(attendance)
     return AttendanceResponse.model_validate(attendance)
+
+
+@router.put("/attendance/{attendance_id}", response_model=AttendanceResponse)
+async def update_attendance_full(
+    attendance_id: int,
+    attendance_update: AttendanceUpdate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_faculty)
+):
+    attendance = db.query(Attendance).filter(Attendance.id == attendance_id).first()
+    if not attendance:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Attendance record not found"
+        )
+    
+    update_data = attendance_update.model_dump(exclude_unset=True)
+    for field, value in update_data.items():
+        setattr(attendance, field, value)
+    
+    db.commit()
+    db.refresh(attendance)
+    return AttendanceResponse.model_validate(attendance)
+
+
+@router.delete("/attendance/{attendance_id}", status_code=status.HTTP_204_NO_CONTENT)
+async def delete_attendance(
+    attendance_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_faculty)
+):
+    attendance = db.query(Attendance).filter(Attendance.id == attendance_id).first()
+    if not attendance:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Attendance record not found"
+        )
+    
+    db.delete(attendance)
+    db.commit()
+    return None
 
 
 @router.get("/grades/", response_model=List[GradeResponse])

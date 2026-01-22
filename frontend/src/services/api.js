@@ -114,6 +114,11 @@ export const enrollmentsApi = {
     return response.data
   },
 
+  getEnrollment: async (id) => {
+    const response = await api.get(`/enrollments/${id}`)
+    return response.data
+  },
+
   createEnrollment: async (data) => {
     const response = await api.post('/enrollments/', data)
     return response.data

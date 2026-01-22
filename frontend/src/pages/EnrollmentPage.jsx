@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, UserPlus, BookOpen, User, Calendar } from 'lucide-react';
+import api from '../lib/api';
 
 const EnrollmentPage = () => {
   const navigate = useNavigate();
@@ -29,16 +30,8 @@ const EnrollmentPage = () => {
 
   const fetchStudents = async () => {
     try {
-      const token = localStorage.getItem('access_token');
-      const response = await fetch('http://127.0.0.1:8000/api/students', {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      });
-      if (response.ok) {
-        const data = await response.json();
-        setStudents(data);
-      }
+      const response = await api.get('/students/');
+      setStudents(response.data);
     } catch (err) {
       console.error('Failed to fetch students:', err);
     }
@@ -46,16 +39,8 @@ const EnrollmentPage = () => {
 
   const fetchCourses = async () => {
     try {
-      const token = localStorage.getItem('access_token');
-      const response = await fetch('http://127.0.0.1:8000/api/courses', {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      });
-      if (response.ok) {
-        const data = await response.json();
-        setCourses(data);
-      }
+      const response = await api.get('/courses/');
+      setCourses(response.data);
     } catch (err) {
       console.error('Failed to fetch courses:', err);
     }
@@ -100,29 +85,11 @@ const EnrollmentPage = () => {
     setSuccess('');
 
     try {
-      const token = localStorage.getItem('access_token');
-      if (!token) {
-        throw new Error('Please login first');
-      }
-
-      const response = await fetch('http://127.0.0.1:8000/api/enrollments', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify({
-          student_id: parseInt(formData.student_id),
-          course_id: parseInt(formData.course_id),
-          enrollment_date: formData.enrollment_date
-        })
+      await api.post('/enrollments/', {
+        student_id: parseInt(formData.student_id),
+        course_id: parseInt(formData.course_id),
+        enrollment_date: formData.enrollment_date
       });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.detail || 'Failed to enroll student');
-      }
 
       setSuccess('Student enrolled successfully!');
       setFormData({
@@ -135,7 +102,7 @@ const EnrollmentPage = () => {
         navigate('/dashboard/enrollments');
       }, 2000);
     } catch (err) {
-      setError(err.message || 'Failed to enroll student');
+      setError(err.response?.data?.detail || 'Failed to enroll student');
     } finally {
       setLoading(false);
     }
@@ -245,20 +212,35 @@ const EnrollmentPage = () => {
                   type="text"
                   name="display_enrollment_date"
                   value={displayDate}
-                  onChange={handleDisplayDateChange}
+                  onChange={(e) => {
+                    let value = e.target.value.replace(/[^\d-]/g, '');
+                    // Auto-format with dashes
+                    const digits = value.replace(/-/g, '');
+                    let formatted = '';
+                    if (digits.length > 0) {
+                      formatted = digits.slice(0, 2);
+                      if (digits.length > 2) {
+                        formatted += '-' + digits.slice(2, 4);
+                      }
+                      if (digits.length > 4) {
+                        formatted += '-' + digits.slice(4, 8);
+                      }
+                    }
+                    setDisplayDate(formatted);
+                    // Update formData if we have a complete date
+                    if (digits.length === 8) {
+                      const day = digits.slice(0, 2);
+                      const month = digits.slice(2, 4);
+                      const year = digits.slice(4, 8);
+                      setFormData(prev => ({
+                        ...prev,
+                        enrollment_date: `${year}-${month}-${day}`
+                      }));
+                    }
+                  }}
                   placeholder="dd-mm-yyyy"
                   maxLength="10"
                   className="w-full pl-11 pr-4 py-3 bg-slate-700 border border-slate-600 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent"
-                  onInput={(e) => {
-                    let value = e.target.value.replace(/[^\d]/g, '');
-                    if (value.length >= 2) {
-                      value = value.slice(0, 2) + '-' + value.slice(2);
-                    }
-                    if (value.length >= 5) {
-                      value = value.slice(0, 5) + '-' + value.slice(5, 9);
-                    }
-                    e.target.value = value;
-                  }}
                 />
               </div>
             </div>

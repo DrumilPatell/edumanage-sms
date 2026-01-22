@@ -90,7 +90,7 @@ export default function EnrollmentsPage() {
                       </div>
                     </td>
                     <td className="py-3 px-4 text-slate-400">
-                      {new Date(enrollment.enrollment_date).toLocaleDateString()}
+                      {new Date(enrollment.enrollment_date).toLocaleDateString('en-GB')}
                     </td>
                     <td className="py-3 px-4">
                       <span className={`badge ${getStatusBadge(enrollment.status)}`}>

@@ -1,11 +1,13 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, Award, BookOpen, User, Hash } from 'lucide-react';
+import api from '../lib/api';
 
 const GradePage = () => {
   const navigate = useNavigate();
   const [courses, setCourses] = useState([]);
   const [students, setStudents] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [formData, setFormData] = useState({
     student_id: '',
     course_id: '',
@@ -14,44 +16,24 @@ const GradePage = () => {
   });
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
-  const [loading, setLoading] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
-    fetchCourses();
-    fetchStudents();
+    fetchData();
   }, []);
 
-  const fetchCourses = async () => {
+  const fetchData = async () => {
     try {
-      const token = localStorage.getItem('access_token');
-      const response = await fetch('http://127.0.0.1:8000/api/courses', {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      });
-      if (response.ok) {
-        const data = await response.json();
-        setCourses(data);
-      }
+      const [coursesRes, studentsRes] = await Promise.all([
+        api.get('/courses/'),
+        api.get('/students/')
+      ]);
+      setCourses(coursesRes.data);
+      setStudents(studentsRes.data);
     } catch (err) {
-      console.error('Failed to fetch courses:', err);
-    }
-  };
-
-  const fetchStudents = async () => {
-    try {
-      const token = localStorage.getItem('access_token');
-      const response = await fetch('http://127.0.0.1:8000/api/students', {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      });
-      if (response.ok) {
-        const data = await response.json();
-        setStudents(data);
-      }
-    } catch (err) {
-      console.error('Failed to fetch students:', err);
+      console.error('Failed to fetch data:', err);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -65,35 +47,17 @@ const GradePage = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setLoading(true);
+    setSubmitting(true);
     setError('');
     setSuccess('');
 
     try {
-      const token = localStorage.getItem('access_token');
-      if (!token) {
-        throw new Error('Please login first');
-      }
-
-      const response = await fetch('http://127.0.0.1:8000/api/grades', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify({
-          student_id: parseInt(formData.student_id),
-          course_id: parseInt(formData.course_id),
-          grade: formData.grade,
-          marks: parseFloat(formData.marks)
-        })
+      await api.post('/academic/grades/', {
+        student_id: parseInt(formData.student_id),
+        course_id: parseInt(formData.course_id),
+        grade: formData.grade,
+        marks: parseFloat(formData.marks)
       });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.detail || 'Failed to assign grade');
-      }
 
       setSuccess('Grade assigned successfully!');
       setFormData({
@@ -107,11 +71,19 @@ const GradePage = () => {
         navigate('/dashboard/grades');
       }, 2000);
     } catch (err) {
-      setError(err.message || 'Failed to assign grade');
+      setError(err.response?.data?.detail || 'Failed to assign grade');
     } finally {
-      setLoading(false);
+      setSubmitting(false);
     }
   };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="inline-block w-8 h-8 border-4 border-amber-500 border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 py-8 px-4">
@@ -131,7 +103,7 @@ const GradePage = () => {
             </div>
             <div>
               <h1 className="text-3xl font-bold text-white">Assign Grade</h1>
-              <p className="text-slate-400">Record student grades</p>
+              <p className="text-slate-400">Record student grades for a course</p>
             </div>
           </div>
 
@@ -259,10 +231,10 @@ const GradePage = () => {
 
             <button
               type="submit"
-              disabled={loading}
+              disabled={submitting}
               className="w-full py-3 px-4 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white font-semibold rounded-lg transition-all duration-200 transform hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
             >
-              {loading ? 'Assigning Grade...' : 'Assign Grade'}
+              {submitting ? 'Assigning Grade...' : 'Assign Grade'}
             </button>
           </form>
         </div>

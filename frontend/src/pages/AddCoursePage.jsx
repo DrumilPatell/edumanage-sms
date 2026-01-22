@@ -10,7 +10,8 @@ const AddCoursePage = () => {
     course_code: '',
     course_name: '',
     description: '',
-    credits: ''
+    credits: '',
+    semester: ''
   });
 
   const mutation = useMutation({
@@ -143,6 +144,23 @@ const AddCoursePage = () => {
                   placeholder="e.g., 3"
                 />
               </div>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-slate-300 mb-2">
+                Semester
+              </label>
+              <select
+                name="semester"
+                value={formData.semester}
+                onChange={handleChange}
+                className="w-full px-4 py-3 bg-slate-700 border border-slate-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent"
+              >
+                <option value="">Select Semester</option>
+                <option value="Spring 2026">Spring 2026</option>
+                <option value="Summer 2026">Summer 2026</option>
+                <option value="Fall 2026">Fall 2026</option>
+              </select>
             </div>
 
             <button

@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useMutation } from '@tanstack/react-query';
 import { studentsApi } from '../services/api';
-import { ArrowLeft, User, Mail, Phone, Calendar, Hash, Building, GraduationCap, BookOpen } from 'lucide-react';
+import { ArrowLeft, User, Mail, Phone, Calendar, Hash, Building, GraduationCap, BookOpen, AlertCircle } from 'lucide-react';
 
 const AddStudentPage = () => {
   const navigate = useNavigate();
@@ -16,12 +16,13 @@ const AddStudentPage = () => {
     address: '',
     enrollment_date: new Date().toISOString().split('T')[0],
     program: '',
-    year_level: 1,
-    gpa: 0.0,
-    is_active: true,
+    year_level: '',
+    gpa: '',
+    gpa_scale: 'us',
     password: ''
   });
 
+  const [errors, setErrors] = useState({});
   const [displayDOB, setDisplayDOB] = useState('');
   const [displayEnrollmentDate, setDisplayEnrollmentDate] = useState(() => {
     const today = new Date();
@@ -41,6 +42,24 @@ const AddStudentPage = () => {
     if (!displayDate || displayDate.length !== 10) return '';
     const [day, month, year] = displayDate.split('-');
     return `${year}-${month}-${day}`;
+  };
+
+  const validateYearLevel = (value) => {
+    const num = parseInt(value);
+    if (isNaN(num) || num < 1 || num > 5) {
+      return 'Year level must be between 1 and 5';
+    }
+    return '';
+  };
+
+  const validateGPA = (value, scale) => {
+    const num = parseFloat(value);
+    const maxGPA = scale === 'us' ? 4.0 : 10.0;
+    if (value === '' || value === null) return '';
+    if (isNaN(num) || num < 0 || num > maxGPA) {
+      return `GPA must be between 0 and ${maxGPA}`;
+    }
+    return '';
   };
 
   const mutation = useMutation({
@@ -71,12 +90,13 @@ const AddStudentPage = () => {
         address: '',
         enrollment_date: new Date().toISOString().split('T')[0],
         program: '',
-        year_level: 1,
-        gpa: 0.0,
-        is_active: true,
+        year_level: '',
+        gpa: '',
+        gpa_scale: 'us',
         password: ''
       });
       setDisplayDOB('');
+      setErrors({});
       setTimeout(() => {
         navigate('/dashboard/students');
       }, 1500);
@@ -89,6 +109,7 @@ const AddStudentPage = () => {
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
+    
     if (name === 'date_of_birth') {
       setFormData({
         ...formData,
@@ -101,11 +122,32 @@ const AddStudentPage = () => {
         enrollment_date: value
       });
       setDisplayEnrollmentDate(formatDateToDisplay(value));
+    } else if (name === 'year_level') {
+      const error = validateYearLevel(value);
+      setErrors(prev => ({ ...prev, year_level: error }));
+      setFormData({
+        ...formData,
+        year_level: value
+      });
+    } else if (name === 'gpa') {
+      const error = validateGPA(value, formData.gpa_scale);
+      setErrors(prev => ({ ...prev, gpa: error }));
+      setFormData({
+        ...formData,
+        gpa: value
+      });
+    } else if (name === 'gpa_scale') {
+      const error = validateGPA(formData.gpa, value);
+      setErrors(prev => ({ ...prev, gpa: error }));
+      setFormData({
+        ...formData,
+        gpa_scale: value,
+        gpa: ''
+      });
     } else {
       setFormData({
         ...formData,
-        [name]: type === 'checkbox' ? checked : 
-                type === 'number' ? parseFloat(value) || 0 : value
+        [name]: type === 'checkbox' ? checked : value
       });
     }
   };
@@ -134,8 +176,19 @@ const AddStudentPage = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    
+    const yearError = formData.year_level ? validateYearLevel(formData.year_level) : '';
+    const gpaError = formData.gpa ? validateGPA(formData.gpa, formData.gpa_scale) : '';
+    
+    if (yearError || gpaError) {
+      setErrors({ year_level: yearError, gpa: gpaError });
+      return;
+    }
+    
     mutation.mutate(formData);
   };
+
+  const getMaxGPA = () => formData.gpa_scale === 'us' ? 4.0 : 10.0;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 py-8 px-4">
@@ -362,7 +415,7 @@ const AddStudentPage = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
                 <label className="block text-sm font-medium text-slate-300 mb-2">
-                  Year Level
+                  Year Level (1-5)
                 </label>
                 <div className="relative">
                   <BookOpen className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
@@ -372,15 +425,36 @@ const AddStudentPage = () => {
                     value={formData.year_level}
                     onChange={handleChange}
                     min="1"
-                    max="6"
-                    className="w-full pl-11 pr-4 py-3 bg-slate-700 border border-slate-600 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent"
+                    max="5"
+                    placeholder="Enter year (1-5)"
+                    className={`w-full pl-11 pr-4 py-3 bg-slate-700 border rounded-lg text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent ${errors.year_level ? 'border-red-500' : 'border-slate-600'}`}
                   />
                 </div>
+                {errors.year_level && (
+                  <p className="text-red-400 text-sm mt-1">{errors.year_level}</p>
+                )}
               </div>
 
               <div>
                 <label className="block text-sm font-medium text-slate-300 mb-2">
-                  GPA
+                  GPA Scale
+                </label>
+                <select
+                  name="gpa_scale"
+                  value={formData.gpa_scale}
+                  onChange={handleChange}
+                  className="w-full px-4 py-3 bg-slate-700 border border-slate-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent"
+                >
+                  <option value="us">US System (0 - 4.0)</option>
+                  <option value="indian">Indian System (0 - 10.0)</option>
+                </select>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <label className="block text-sm font-medium text-slate-300 mb-2">
+                  GPA (0 - {getMaxGPA()})
                 </label>
                 <input
                   type="number"
@@ -389,7 +463,25 @@ const AddStudentPage = () => {
                   onChange={handleChange}
                   step="0.01"
                   min="0"
-                  max="4"
+                  max={getMaxGPA()}
+                  placeholder={`Enter GPA (0 - ${getMaxGPA()})`}
+                  className={`w-full px-4 py-3 bg-slate-700 border rounded-lg text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent ${errors.gpa ? 'border-red-500' : 'border-slate-600'}`}
+                />
+                {errors.gpa && (
+                  <p className="text-red-400 text-sm mt-1">{errors.gpa}</p>
+                )}
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-slate-300 mb-2">
+                  Password (Optional)
+                </label>
+                <input
+                  type="password"
+                  name="password"
+                  value={formData.password}
+                  onChange={handleChange}
+                  placeholder="Default: Student@123"
                   className="w-full px-4 py-3 bg-slate-700 border border-slate-600 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent"
                 />
               </div>
@@ -412,20 +504,6 @@ const AddStudentPage = () => {
               </div>
             </div>
 
-            <div className="flex items-center gap-3">
-              <input
-                type="checkbox"
-                id="is_active"
-                name="is_active"
-                checked={formData.is_active}
-                onChange={handleChange}
-                className="w-4 h-4 rounded border-slate-600 bg-slate-700 text-amber-500 focus:ring-amber-500 focus:ring-offset-slate-900"
-              />
-              <label htmlFor="is_active" className="text-sm font-medium text-slate-300">
-                Active Student
-              </label>
-            </div>
-
             <div className="flex gap-3">
               <button
                 type="button"
@@ -436,7 +514,7 @@ const AddStudentPage = () => {
               </button>
               <button
                 type="submit"
-                disabled={mutation.isPending}
+                disabled={mutation.isPending || errors.year_level || errors.gpa}
                 className="flex-1 py-3 px-4 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white font-semibold rounded-lg transition-all duration-200 transform hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
               >
                 {mutation.isPending ? 'Adding Student...' : 'Add Student'}

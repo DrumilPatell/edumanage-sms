@@ -1,9 +1,11 @@
 import { useQuery } from '@tanstack/react-query'
+import { useNavigate } from 'react-router-dom'
 import { academicApi } from '../services/api'
 import { useAuthStore } from '../store/authStore'
 import { Plus } from 'lucide-react'
 
 export default function GradesPage() {
+  const navigate = useNavigate()
   const { user } = useAuthStore()
   const canEdit = user?.role === 'admin' || user?.role === 'faculty'
   
@@ -27,7 +29,10 @@ export default function GradesPage() {
           <p className="text-slate-400 mt-1">Manage student grades and assessments</p>
         </div>
         {canEdit && (
-          <button className="btn-primary flex items-center gap-2">
+          <button 
+            onClick={() => navigate('/assign-grade')}
+            className="btn-primary flex items-center gap-2"
+          >
             <Plus className="w-4 h-4" />
             Add Grade
           </button>
