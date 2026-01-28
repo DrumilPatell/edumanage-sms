@@ -74,6 +74,11 @@ export const studentsApi = {
     const response = await api.get('/students/me/profile')
     return response.data
   },
+
+  bulkUpdateSemester: async (semester) => {
+    const response = await api.patch(`/students/bulk/semester?semester=${encodeURIComponent(semester)}`)
+    return response.data
+  },
 }
 
 export const coursesApi = {
@@ -104,6 +109,11 @@ export const coursesApi = {
 
   getMyCourses: async () => {
     const response = await api.get('/courses/faculty/my-courses')
+    return response.data
+  },
+
+  bulkUpdateSemester: async (semester) => {
+    const response = await api.patch(`/courses/bulk/semester?semester=${encodeURIComponent(semester)}`)
     return response.data
   },
 }
@@ -173,6 +183,28 @@ export const academicApi = {
 
   deleteGrade: async (id) => {
     const response = await api.delete(`/academic/grades/${id}`)
+    return response.data
+  },
+}
+
+export const semestersApi = {
+  getSemesters: async () => {
+    const response = await api.get('/semesters/')
+    return response.data
+  },
+
+  createSemester: async (data) => {
+    const response = await api.post('/semesters/', data)
+    return response.data
+  },
+
+  setCurrentSemester: async (id) => {
+    const response = await api.patch(`/semesters/${id}/set-current`)
+    return response.data
+  },
+
+  deleteSemester: async (id) => {
+    const response = await api.delete(`/semesters/${id}`)
     return response.data
   },
 }

@@ -121,6 +121,18 @@ async def update_course(
     return CourseResponse.model_validate(course)
 
 
+@router.patch("/bulk/semester")
+async def bulk_update_course_semester(
+    semester: str = Query(..., description="New semester value for all courses"),
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_faculty)
+):
+    """Update semester for all courses at once (Admin/Faculty only)"""
+    result = db.query(Course).update({"semester": semester})
+    db.commit()
+    return {"message": f"Successfully updated semester to '{semester}' for {result} courses", "updated_count": result}
+
+
 @router.delete("/{course_id}")
 async def delete_course(
     course_id: int,

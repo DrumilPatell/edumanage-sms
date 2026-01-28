@@ -10,7 +10,7 @@ class StudentBase(BaseModel):
     address: Optional[str] = None
     enrollment_year: Optional[int] = None
     program: Optional[str] = None
-    current_semester: Optional[int] = None
+    current_semester: Optional[str] = None
 
 
 class StudentCreate(StudentBase):

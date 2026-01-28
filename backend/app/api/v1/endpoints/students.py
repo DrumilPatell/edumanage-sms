@@ -216,6 +216,18 @@ async def update_student(
     return StudentResponse.model_validate(student)
 
 
+@router.patch("/bulk/semester")
+async def bulk_update_semester(
+    semester: str = Query(..., description="New semester value for all students"),
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_admin)
+):
+    """Update semester for all students at once (Admin only)"""
+    result = db.query(Student).update({Student.current_semester: semester})
+    db.commit()
+    return {"message": f"Successfully updated semester to '{semester}' for {result} students", "updated_count": result}
+
+
 @router.delete("/{student_id}")
 async def delete_student(
     student_id: int,

@@ -3,10 +3,13 @@ import { useNavigate, useParams } from 'react-router-dom'
 import { useMutation, useQuery } from '@tanstack/react-query'
 import { usersApi } from '../services/api'
 import { ArrowLeft, Save, Eye, EyeOff } from 'lucide-react'
+import { useAuthStore } from '../store/authStore'
 
 export default function EditUserPage() {
   const { id } = useParams()
   const navigate = useNavigate()
+  const { user: currentUser } = useAuthStore()
+  const isAdmin = currentUser?.role === 'admin'
   const [showPassword, setShowPassword] = useState(false)
   const [formData, setFormData] = useState({
     email: '',
@@ -100,29 +103,35 @@ export default function EditUserPage() {
             />
           </div>
 
-          <div>
-            <label htmlFor="password" className="block text-sm font-medium text-slate-300 mb-2">
-              Password <span className="text-slate-500 text-xs">(leave blank to keep current)</span>
-            </label>
-            <div className="relative">
-              <input
-                type={showPassword ? 'text' : 'password'}
-                id="password"
-                name="password"
-                value={formData.password}
-                onChange={handleChange}
-                className="input-field pr-12"
-                placeholder="Enter new password to change"
-              />
-              <button
-                type="button"
-                onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-300"
-              >
-                {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
-              </button>
+          {/* Password field - only for admin */}
+          {isAdmin && (
+            <div>
+              <label htmlFor="password" className="block text-sm font-medium text-slate-300 mb-2">
+                Password <span className="text-slate-500 text-xs">(leave blank to keep current)</span>
+              </label>
+              <div className="relative">
+                <input
+                  type={showPassword ? 'text' : 'password'}
+                  id="password"
+                  name="password"
+                  value={formData.password}
+                  onChange={handleChange}
+                  className="input-field pr-12"
+                  placeholder={user?.password ? `Current: ${user.password}` : 'Enter new password to change'}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-300"
+                >
+                  {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                </button>
+              </div>
+              {user?.password && (
+                <div className="text-xs text-slate-500 mt-1">Old Password: <span className="text-slate-300">{user.password}</span></div>
+              )}
             </div>
-          </div>
+          )}
 
           <div>
             <label htmlFor="full_name" className="block text-sm font-medium text-slate-300 mb-2">

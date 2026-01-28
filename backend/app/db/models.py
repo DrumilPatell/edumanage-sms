@@ -138,3 +138,14 @@ class Grade(Base):
     
     student = relationship("Student", back_populates="grades")
     course = relationship("Course", back_populates="grades")
+
+
+class Semester(Base):
+    __tablename__ = "semesters"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    name = Column(String(50), unique=True, nullable=False)  # e.g., "Fall 2024", "Spring 2025"
+    is_current = Column(Boolean, default=False)  # Mark the current active semester
+    start_date = Column(Date, nullable=True)
+    end_date = Column(Date, nullable=True)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
