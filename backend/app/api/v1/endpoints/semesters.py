@@ -14,7 +14,6 @@ async def get_semesters(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
-    """Get all semesters (any authenticated user)"""
     semesters = db.query(Semester).order_by(Semester.id.desc()).all()
     return semesters
 
@@ -26,7 +25,6 @@ async def create_semester(
     current_user: User = Depends(require_faculty)
 ):
     """Create a new semester (Admin only)"""
-    # Check if semester with same name exists
     existing = db.query(Semester).filter(Semester.name == semester.name).first()
     if existing:
         raise HTTPException(
