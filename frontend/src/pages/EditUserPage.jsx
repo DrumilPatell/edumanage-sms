@@ -123,9 +123,6 @@ export default function EditUserPage() {
                 {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
               </button>
             </div>
-            <p className="text-xs text-amber-400 mt-1">
-              ⚠️ Current password is encrypted and cannot be displayed. Enter a new password here to reset it.
-            </p>
           </div>
 
           <div>

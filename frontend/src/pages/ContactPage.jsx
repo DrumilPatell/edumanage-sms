@@ -60,7 +60,7 @@ export default function ContactPage() {
                 </div>
                 <div>
                   <h3 className="text-lg font-semibold text-white mb-2">Phone</h3>
-                  <p className="text-slate-400">+1 (555) 123-4567</p>
+                  <p className="text-slate-400">+91 90548XXXXX</p>
                   <p className="text-slate-500 text-sm mt-1">Mon-Fri, 9am-6pm EST</p>
                 </div>
               </div>
@@ -74,9 +74,9 @@ export default function ContactPage() {
                 <div>
                   <h3 className="text-lg font-semibold text-white mb-2">Office</h3>
                   <p className="text-slate-400">
-                    123 Education Street<br />
-                    San Francisco, CA 94102<br />
-                    United States
+                    Surya City<br />
+                    Ahmedabad Gujarat<br />
+                    India 
                   </p>
                 </div>
               </div>
