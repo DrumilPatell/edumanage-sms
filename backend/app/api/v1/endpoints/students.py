@@ -103,8 +103,8 @@ async def create_student(
     else:
         db_student = Student(**student_data)
         user = db.query(User).filter(User.id == student.user_id).first()
-        if user and user.role != RoleEnum.STUDENT:
-            user.role = RoleEnum.STUDENT
+        if user is not None and str(user.role) != RoleEnum.STUDENT.value:
+            user.role = RoleEnum.STUDENT  # type: ignore
     
     db.add(db_student)
     db.commit()

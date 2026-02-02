@@ -4,7 +4,7 @@ from typing import List
 from app.db.database import get_db
 from app.db.models import User, Semester
 from app.schemas.semester import SemesterCreate, SemesterUpdate, SemesterResponse
-from app.auth.dependencies import get_current_user, require_admin, require_faculty
+from app.auth.dependencies import get_current_user, require_faculty
 
 router = APIRouter()
 

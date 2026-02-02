@@ -4,7 +4,7 @@ from typing import List, Optional
 from app.db.database import get_db
 from app.db.models import User, RoleEnum
 from app.schemas.user import UserResponse, UserUpdate
-from app.auth.dependencies import get_current_user, require_admin
+from app.auth.dependencies import require_admin
 
 router = APIRouter()
 
@@ -16,7 +16,7 @@ async def get_users(
     role: Optional[RoleEnum] = None,
     is_active: Optional[bool] = None,
     db: Session = Depends(get_db),
-    current_user: User = Depends(require_admin)
+    _current_user: User = Depends(require_admin)
 ):
     query = db.query(User)
     
@@ -33,7 +33,7 @@ async def get_users(
 async def get_user(
     user_id: int,
     db: Session = Depends(get_db),
-    current_user: User = Depends(require_admin)
+    _current_user: User = Depends(require_admin)
 ):
     user = db.query(User).filter(User.id == user_id).first()
     if not user:
@@ -49,7 +49,7 @@ async def update_user(
     user_id: int,
     user_update: UserUpdate,
     db: Session = Depends(get_db),
-    current_user: User = Depends(require_admin)
+    _current_user: User = Depends(require_admin)
 ):
     user = db.query(User).filter(User.id == user_id).first()
     if not user:
@@ -80,7 +80,7 @@ async def delete_user(
             detail="User not found"
         )
     
-    if user.id == current_user.id:
+    if int(user.id) == int(current_user.id):  # type: ignore
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Cannot delete your own account"
