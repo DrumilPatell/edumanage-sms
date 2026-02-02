@@ -29,7 +29,10 @@ class UserLogin(BaseModel):
 
 
 class UserUpdate(BaseModel):
+    email: Optional[EmailStr] = None
     full_name: Optional[str] = None
+    password: Optional[str] = None
+    role: Optional[RoleEnum] = None
     profile_picture: Optional[str] = None
     is_active: Optional[bool] = None
 

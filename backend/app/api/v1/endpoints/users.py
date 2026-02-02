@@ -5,6 +5,7 @@ from app.db.database import get_db
 from app.db.models import User, RoleEnum
 from app.schemas.user import UserResponse, UserUpdate
 from app.auth.dependencies import require_admin
+from app.core.security import hash_password
 
 router = APIRouter()
 
@@ -59,6 +60,14 @@ async def update_user(
         )
     
     update_data = user_update.model_dump(exclude_unset=True)
+    
+    # Handle password hashing if password is being updated
+    if 'password' in update_data and update_data['password']:
+        update_data['hashed_password'] = hash_password(update_data['password'])
+        del update_data['password']
+    elif 'password' in update_data:
+        del update_data['password']
+    
     for field, value in update_data.items():
         setattr(user, field, value)
     
