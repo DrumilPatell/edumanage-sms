@@ -80,7 +80,7 @@ export default function EnrollmentsPage() {
                     <td className="py-3 px-4">
                       <div>
                         <p className="font-medium text-white">{enrollment.student_name}</p>
-                        <p className="text-sm text-slate-400">{enrollment.student_email}</p>
+                        <p className="text-sm text-slate-400">{enrollment.student_code}</p>
                       </div>
                     </td>
                     <td className="py-3 px-4">
