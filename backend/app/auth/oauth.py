@@ -5,7 +5,7 @@ from app.core.config import settings
 
 class OAuthProvider:
     
-    async def verify_token(self, token: str) -> Optional[Dict]:
+    async def verify_token(self, access_token: str) -> Optional[Dict]:
         raise NotImplementedError
 
 
