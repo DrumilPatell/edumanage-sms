@@ -35,7 +35,6 @@ export default function EditUserPage() {
 
   const mutation = useMutation({
     mutationFn: (data) => {
-      // Only send password if it's filled
       const updateData = { ...data }
       if (!updateData.password) {
         delete updateData.password

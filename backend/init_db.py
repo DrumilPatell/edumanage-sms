@@ -128,7 +128,7 @@ def init_db():
         
         enrollments = []
         for student in students[:3]:
-            for course in courses[:2]:  # CS101 and CS201
+            for course in courses[:2]:
                 enrollment = Enrollment(
                     student_id=student.id,
                     course_id=course.id,

@@ -16,7 +16,7 @@ class EnrollmentUpdate(BaseModel):
     student_id: Optional[int] = None
     course_id: Optional[int] = None
     enrollment_date: Optional[datetime] = None
-    status: Optional[str] = None  # active, completed, dropped, withdrawn
+    status: Optional[str] = None
 
 
 
@@ -33,6 +33,6 @@ class EnrollmentResponse(EnrollmentBase):
 class EnrollmentWithDetails(EnrollmentResponse):
     student_name: str
     student_email: str
-    student_code: str  # The student ID like STU001
+    student_code: str
     course_name: str
     course_code: str

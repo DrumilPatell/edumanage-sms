@@ -44,22 +44,16 @@ const MarkAttendancePage = () => {
   const fetchEnrolledStudents = async () => {
     setFetchingStudents(true);
     try {
-      // Fetch enrollments for the selected course
       const response = await api.get('/enrollments/', { params: { course_id: selectedCourse } });
-      
-      // Filter students who were enrolled on or before the selected attendance date
       const attendanceDateObj = new Date(attendanceDate);
-      attendanceDateObj.setHours(23, 59, 59, 999); // End of day
+      attendanceDateObj.setHours(23, 59, 59, 999);
       
       const filteredEnrollments = response.data.filter(enrollment => {
         const enrollmentDate = new Date(enrollment.enrollment_date);
-        // Only include students who were enrolled on or before the attendance date
-        // and whose enrollment status is 'active' or was active at that time
         return enrollmentDate <= attendanceDateObj && 
-               (enrollment.status === 'active' || enrollment.status === 'completed');
+              (enrollment.status === 'active' || enrollment.status === 'completed');
       });
-      
-      // Transform to get student info
+
       const enrolledStudents = filteredEnrollments.map(enrollment => ({
         student_id: enrollment.student_id,
         full_name: enrollment.student_name,
@@ -67,7 +61,6 @@ const MarkAttendancePage = () => {
         enrollment_date: enrollment.enrollment_date
       }));
       setStudents(enrolledStudents);
-      // Initialize attendance as all present
       const initialAttendance = {};
       enrolledStudents.forEach(student => {
         initialAttendance[student.student_id] = true;
@@ -112,7 +105,6 @@ const MarkAttendancePage = () => {
     setSuccess('');
 
     try {
-      // Submit attendance for each student
       const promises = Object.entries(attendance).map(([studentId, isPresent]) => 
         api.post('/academic/attendance/', {
           student_id: parseInt(studentId),
@@ -249,7 +241,6 @@ const MarkAttendancePage = () => {
                 ) : (
                   <div className="space-y-3 max-h-96 overflow-y-auto">
                     {students.map((student) => {
-                      // Format enrollment date
                       const enrollDate = new Date(student.enrollment_date);
                       const enrollDay = String(enrollDate.getDate()).padStart(2, '0');
                       const enrollMonth = String(enrollDate.getMonth() + 1).padStart(2, '0');

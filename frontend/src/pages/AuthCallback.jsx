@@ -11,7 +11,6 @@ export default function AuthCallback() {
   useEffect(() => {
     const handleCallback = async () => {
       try {
-        // Get token from URL query params (sent by backend after OAuth callback)
         const token = searchParams.get('token')
         const userEmail = searchParams.get('user')
         
@@ -22,7 +21,6 @@ export default function AuthCallback() {
         if (!token) {
           throw new Error('No token received from authentication')
         }
-        // Fetch debug info for token before calling /auth/me
         const apiUrl = import.meta.env.VITE_API_URL || 'http://127.0.0.1:8000/api'
         console.log('AuthCallback: Fetching debug-token from:', `${apiUrl}/auth/debug-token`)
         const dbgResp = await fetch(`${apiUrl}/auth/debug-token?token=${encodeURIComponent(token)}`)
@@ -32,15 +30,11 @@ export default function AuthCallback() {
         } catch (e) {
           console.warn('Failed to parse debug-token response', e)
         }
-
         console.log('AuthCallback: debug-token response:', dbgJson)
-
         if (!dbgResp.ok || !(dbgJson && dbgJson.ok)) {
           const detail = dbgJson?.detail || (await dbgResp.text())
           throw new Error(`Token validation failed: ${detail || dbgResp.statusText}`)
         }
-
-        // Fetch user details using the token
         console.log('Fetching user from:', `${apiUrl}/auth/me`)
         console.log('Using token:', token)
         
@@ -50,9 +44,7 @@ export default function AuthCallback() {
             'Content-Type': 'application/json'
           }
         })
-
         console.log('Response status:', response.status)
-
         if (!response.ok) {
           const errorText = await response.text()
           console.error('Response error:', errorText)
@@ -60,30 +52,21 @@ export default function AuthCallback() {
           const tokenSnippet = token ? `${token.substring(0, 12)}... (len=${token.length})` : 'no-token'
           throw new Error(`Failed to fetch user details: ${response.status} - ${errorText} | token=${tokenSnippet}`)
         }
-
         const user = await response.json()
         console.log('User fetched:', user)
-
-        // Set auth state with user and token
         setAuth(user, token)
-
-        // Redirect to dashboard
         navigate('/dashboard', { replace: true })
-
       } catch (err) {
         console.error('Auth callback error:', err)
         setError(err.message || 'Authentication failed')
         
-        // Redirect to login after 3 seconds
         setTimeout(() => {
           navigate('/login', { replace: true })
         }, 3000)
       }
     }
-
     handleCallback()
   }, [searchParams, navigate, setAuth])
-
   if (error) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
@@ -100,7 +83,6 @@ export default function AuthCallback() {
             <button
               className="btn btn-secondary mr-2"
               onClick={() => {
-                // Clear stored token and retry
                 localStorage.removeItem('auth-storage')
                 window.location.href = '/login'
               }}
@@ -110,7 +92,6 @@ export default function AuthCallback() {
             <button
               className="btn btn-primary"
               onClick={() => {
-                // Copy token to clipboard for manual debug
                 const token = new URLSearchParams(window.location.search).get('token')
                 if (token) navigator.clipboard.writeText(token)
               }}
@@ -121,7 +102,6 @@ export default function AuthCallback() {
               <button
                 className="btn btn-primary"
                 onClick={async () => {
-                  // Auto retry with Google
                   localStorage.removeItem('auth-storage')
                   const resp = await fetch(`${import.meta.env.VITE_API_URL || 'http://127.0.0.1:8000/api'}/auth/google/login`)
                   const data = await resp.json()
@@ -159,7 +139,6 @@ export default function AuthCallback() {
       </div>
     )
   }
-
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
       <div className="text-center">

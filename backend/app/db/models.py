@@ -17,11 +17,11 @@ class User(Base):
     id = Column(Integer, primary_key=True, index=True)
     email = Column(String(255), unique=True, index=True, nullable=False)
     full_name = Column(String(255), nullable=False)
-    hashed_password = Column(String(255), nullable=True)  # For email/password login
+    hashed_password = Column(String(255), nullable=True)
     profile_picture = Column(String(500), nullable=True)
     role = Column(Enum(RoleEnum), nullable=False, default=RoleEnum.STUDENT)
     
-    oauth_provider = Column(String(50), nullable=True)  # google, microsoft, github
+    oauth_provider = Column(String(50), nullable=True)
     oauth_id = Column(String(255), nullable=True)
     
     is_active = Column(Boolean, default=True)
@@ -44,8 +44,8 @@ class Student(Base):
     address = Column(Text, nullable=True)
     
     enrollment_year = Column(Integer, nullable=True)
-    program = Column(String(100), nullable=True)  # e.g., "Computer Science", "Engineering"
-    current_semester = Column(String(50), nullable=True)  # e.g., "Fall 2024", "Spring 2025"
+    program = Column(String(100), nullable=True)
+    current_semester = Column(String(50), nullable=True)
     gpa = Column(Float, nullable=True)
     
     created_at = Column(DateTime(timezone=True), server_default=func.now())
@@ -89,7 +89,7 @@ class Enrollment(Base):
     course_id = Column(Integer, ForeignKey("courses.id", ondelete="CASCADE"), nullable=False)
     
     enrollment_date = Column(DateTime(timezone=True), server_default=func.now())
-    status = Column(String(20), default="active")  # active, completed, dropped, withdrawn
+    status = Column(String(20), default="active")
     
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
@@ -106,7 +106,7 @@ class Attendance(Base):
     course_id = Column(Integer, ForeignKey("courses.id", ondelete="CASCADE"), nullable=False)
     
     date = Column(Date, nullable=False)
-    status = Column(String(20), nullable=False)  # present, absent, late, excused
+    status = Column(String(20), nullable=False)
     notes = Column(Text, nullable=True)
     
     created_at = Column(DateTime(timezone=True), server_default=func.now())
@@ -123,12 +123,12 @@ class Grade(Base):
     student_id = Column(Integer, ForeignKey("students.id", ondelete="CASCADE"), nullable=False)
     course_id = Column(Integer, ForeignKey("courses.id", ondelete="CASCADE"), nullable=False)
     
-    assessment_type = Column(String(50), nullable=False)  # midterm, final, assignment, quiz, project
+    assessment_type = Column(String(50), nullable=False)
     assessment_name = Column(String(255), nullable=False)
     score = Column(Float, nullable=False)
     max_score = Column(Float, nullable=False)
-    percentage = Column(Float, nullable=True)  # Calculated field
-    letter_grade = Column(String(5), nullable=True)  # A, B+, B, C, etc.
+    percentage = Column(Float, nullable=True)
+    letter_grade = Column(String(5), nullable=True)
     
     date_assessed = Column(Date, nullable=True)
     remarks = Column(Text, nullable=True)
@@ -144,8 +144,8 @@ class Semester(Base):
     __tablename__ = "semesters"
     
     id = Column(Integer, primary_key=True, index=True)
-    name = Column(String(50), unique=True, nullable=False)  # e.g., "Fall 2024", "Spring 2025"
-    is_current = Column(Boolean, default=False)  # Mark the current active semester
+    name = Column(String(50), unique=True, nullable=False)
+    is_current = Column(Boolean, default=False)
     start_date = Column(Date, nullable=True)
     end_date = Column(Date, nullable=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now())

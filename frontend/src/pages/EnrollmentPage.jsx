@@ -227,7 +227,7 @@ const EnrollmentPage = () => {
                       }
                     }
                     setDisplayDate(formatted);
-                    // Update formData if we have a complete date
+                    
                     if (digits.length === 8) {
                       const day = digits.slice(0, 2);
                       const month = digits.slice(2, 4);

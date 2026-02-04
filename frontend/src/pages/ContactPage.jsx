@@ -12,7 +12,6 @@ export default function ContactPage() {
 
   const handleSubmit = (e) => {
     e.preventDefault()
-    // In a real app, this would send to a backend
     alert('Thank you for contacting us! We will get back to you soon.')
     setFormData({ name: '', email: '', subject: '', message: '' })
   }

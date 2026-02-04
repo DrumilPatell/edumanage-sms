@@ -1,12 +1,12 @@
 from pydantic import BaseModel
 from typing import Optional
-from datetime import datetime, date
+from datetime import datetime, date as DateType
 
 
 class AttendanceBase(BaseModel):
     student_id: int
     course_id: int
-    date: date
+    date: DateType
     status: str  # present, absent, late, excused
     notes: Optional[str] = None
 
@@ -18,7 +18,7 @@ class AttendanceCreate(AttendanceBase):
 class AttendanceUpdate(BaseModel):
     student_id: Optional[int] = None
     course_id: Optional[int] = None
-    date: Optional[date] = None
+    date: Optional[DateType] = None
     status: Optional[str] = None
     notes: Optional[str] = None
 
@@ -44,7 +44,7 @@ class GradeBase(BaseModel):
     assessment_name: str
     score: float
     max_score: float
-    date_assessed: Optional[date] = None
+    date_assessed: Optional[DateType] = None
     remarks: Optional[str] = None
 
 

@@ -21,7 +21,6 @@ export default function CoursesPage() {
     queryFn: () => coursesApi.getCourses({ limit: 100 }),
   })
 
-  // Fetch semesters from database
   const { data: semesters = [] } = useQuery({
     queryKey: ['semesters'],
     queryFn: semestersApi.getSemesters,
@@ -35,7 +34,6 @@ export default function CoursesPage() {
     },
   })
 
-  // Bulk update semester mutation
   const bulkUpdateSemesterMutation = useMutation({
     mutationFn: (semester) => coursesApi.bulkUpdateSemester(semester),
     onSuccess: () => {
@@ -45,7 +43,6 @@ export default function CoursesPage() {
     },
   })
 
-  // Create semester mutation
   const createSemesterMutation = useMutation({
     mutationFn: (name) => semestersApi.createSemester({ name }),
     onSuccess: () => {
@@ -54,7 +51,6 @@ export default function CoursesPage() {
     },
   })
 
-  // Delete semester mutation
   const deleteSemesterMutation = useMutation({
     mutationFn: (id) => semestersApi.deleteSemester(id),
     onSuccess: () => {

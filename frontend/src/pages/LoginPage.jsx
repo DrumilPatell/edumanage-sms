@@ -12,15 +12,13 @@ export default function LoginPage() {
   const [error, setError] = useState(null)
   const [activeTab, setActiveTab] = useState('login') // 'login', 'register'
   const [showPassword, setShowPassword] = useState(false)
-  
-  // Check if we should open register tab
+
   useEffect(() => {
     if (location.state?.openRegister) {
       setActiveTab('register')
     }
   }, [location.state])
-  
-  // Email/Password form state
+
   const [formData, setFormData] = useState({
     email: '',
     password: '',
@@ -33,11 +31,10 @@ export default function LoginPage() {
     setError(null)
 
     try {
-      // Clear any stale auth tokens before starting OAuth
+
       localStorage.removeItem('auth-storage')
       console.log('Cleared local auth-storage before OAuth')
 
-      // Get OAuth authorization URL from backend
       const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://127.0.0.1:8000/api'}/auth/${provider}/login`)
       
       if (!response.ok) {
@@ -46,7 +43,6 @@ export default function LoginPage() {
       
       const data = await response.json()
       
-      // Redirect to OAuth provider
       window.location.href = data.auth_url
       
     } catch (err) {
@@ -79,11 +75,9 @@ export default function LoginPage() {
       }
 
       const data = await response.json()
-      
-      // Store auth data
+
       setAuth(data.user, data.access_token)
-      
-      // Navigate to dashboard
+
       navigate('/dashboard')
       
     } catch (err) {
@@ -115,7 +109,6 @@ export default function LoginPage() {
 
       if (!response.ok) {
         const errorData = await response.json()
-        // Handle error properly - check if detail is object or string
         const errorMessage = typeof errorData.detail === 'string' 
           ? errorData.detail 
           : (errorData.detail?.msg || errorData.message || 'Registration failed')
@@ -123,11 +116,9 @@ export default function LoginPage() {
       }
 
       const data = await response.json()
-      
-      // Store auth data
+
       setAuth(data.user, data.access_token)
-      
-      // Navigate to dashboard
+
       navigate('/dashboard')
       
     } catch (err) {

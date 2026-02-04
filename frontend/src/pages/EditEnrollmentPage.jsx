@@ -15,19 +15,16 @@ export default function EditEnrollmentPage() {
   });
   const [displayDate, setDisplayDate] = useState('');
 
-  // Fetch students first
   const { data: students = [], isLoading: studentsLoading } = useQuery({
     queryKey: ['students'],
     queryFn: () => studentsApi.getStudents({ limit: 100 }),
   });
 
-  // Fetch courses
   const { data: courses = [], isLoading: coursesLoading } = useQuery({
     queryKey: ['courses'],
     queryFn: () => coursesApi.getCourses({ limit: 100 }),
   });
 
-  // Fetch enrollment data directly by ID
   const { data: enrollment, isLoading: enrollmentLoading } = useQuery({
     queryKey: ['enrollment', id],
     queryFn: () => enrollmentsApi.getEnrollment(id),
@@ -35,7 +32,6 @@ export default function EditEnrollmentPage() {
 
   useEffect(() => {
     if (enrollment) {
-      // Parse enrollment date - handle both "2026-01-22" and "2026-01-22T00:00:00" formats
       let enrollDate = enrollment.enrollment_date || '';
       if (enrollDate.includes('T')) {
         enrollDate = enrollDate.split('T')[0];
@@ -48,7 +44,6 @@ export default function EditEnrollmentPage() {
         status: enrollment.status || 'active'
       });
       
-      // Format display date as dd-mm-yyyy
       if (enrollDate) {
         const [year, month, day] = enrollDate.split('-');
         setDisplayDate(`${day}-${month}-${year}`);
@@ -99,7 +94,6 @@ export default function EditEnrollmentPage() {
     }
   };
 
-  // Show loading while any data is being fetched
   if (enrollmentLoading || studentsLoading || coursesLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
