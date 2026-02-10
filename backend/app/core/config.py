@@ -32,6 +32,13 @@ class Settings(BaseSettings):
     # Frontend
     FRONTEND_URL: str = ""
     
+    # Email Configuration
+    SMTP_HOST: str = ""
+    SMTP_PORT: int = 587
+    SMTP_USER: str = ""
+    SMTP_PASSWORD: str = ""
+    CONTACT_EMAIL: str = ""
+    
     # Role Assignment
     ADMIN_EMAILS: str = ""
     FACULTY_EMAILS: str = ""

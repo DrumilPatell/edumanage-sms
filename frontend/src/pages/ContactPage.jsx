@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom'
 import { ArrowLeft, Mail, Phone, MapPin, Send } from 'lucide-react'
 import { useState } from 'react'
+import { submitContactForm } from '../lib/api'
 
 export default function ContactPage() {
   const [formData, setFormData] = useState({
@@ -9,11 +10,26 @@ export default function ContactPage() {
     subject: '',
     message: ''
   })
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [submitStatus, setSubmitStatus] = useState(null)
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault()
-    alert('Thank you for contacting us! We will get back to you soon.')
-    setFormData({ name: '', email: '', subject: '', message: '' })
+    setIsSubmitting(true)
+    setSubmitStatus(null)
+
+    try {
+      const result = await submitContactForm(formData)
+      setSubmitStatus({ type: 'success', message: result.message })
+      setFormData({ name: '', email: '', subject: '', message: '' })
+    } catch (error) {
+      setSubmitStatus({ 
+        type: 'error', 
+        message: error.response?.data?.detail || 'Failed to send message. Please try again.' 
+      })
+    } finally {
+      setIsSubmitting(false)
+    }
   }
 
   return (
@@ -141,12 +157,23 @@ export default function ContactPage() {
                 />
               </div>
 
+              {submitStatus && (
+                <div className={`p-4 rounded-lg ${
+                  submitStatus.type === 'success' 
+                    ? 'bg-green-500/10 border border-green-500/20 text-green-400' 
+                    : 'bg-red-500/10 border border-red-500/20 text-red-400'
+                }`}>
+                  {submitStatus.message}
+                </div>
+              )}
+
               <button
                 type="submit"
-                className="w-full btn-primary flex items-center justify-center gap-2"
+                disabled={isSubmitting}
+                className="w-full btn-primary flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <Send className="w-4 h-4" />
-                Send Message
+                {isSubmitting ? 'Sending...' : 'Send Message'}
               </button>
             </form>
           </div>
