@@ -99,7 +99,7 @@ const EnrollmentPage = () => {
       });
       
       setTimeout(() => {
-        navigate('/dashboard/enrollments');
+        navigate('/dashboard');
       }, 2000);
     } catch (err) {
       setError(err.response?.data?.detail || 'Failed to enroll student');
@@ -112,11 +112,11 @@ const EnrollmentPage = () => {
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 py-8 px-4">
       <div className="max-w-2xl mx-auto">
         <button
-          onClick={() => navigate('/dashboard/enrollments')}
+          onClick={() => navigate('/dashboard')}
           className="flex items-center gap-2 text-amber-400 hover:text-amber-300 mb-6 transition-colors"
         >
           <ArrowLeft className="w-5 h-5" />
-          Back to Enrollments
+          Back to Dashboard
         </button>
 
         <div className="bg-slate-800 rounded-2xl shadow-2xl p-8 border border-slate-700">

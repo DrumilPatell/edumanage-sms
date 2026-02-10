@@ -43,6 +43,7 @@ import EditCoursePage from './pages/EditCoursePage'
 import EditStudentPage from './pages/EditStudentPage'
 import EditEnrollmentPage from './pages/EditEnrollmentPage'
 import EditAttendancePage from './pages/EditAttendancePage'
+import ForgotPasswordPage from './pages/ForgotPasswordPage'
 
 function PrivateRoute({ children, allowedRoles }) {
   const { user, isAuthenticated } = useAuthStore()
@@ -90,6 +91,7 @@ function App() {
         <Route path="/blog/streamlining-enrollment-processes" element={<BlogPost5 />} />
         <Route path="/blog/year-in-review-2023" element={<BlogPost6 />} />
 
+        <Route path="/forgot-password" element={<ForgotPasswordPage />} />
         <Route path="/auth/callback" element={<AuthCallback />} />
 
         <Route path="/dashboard" element={

@@ -42,7 +42,7 @@ export default function EditUserPage() {
       return usersApi.updateUser(id, updateData)
     },
     onSuccess: () => {
-      setTimeout(() => navigate('/dashboard/users'), 1500)
+      setTimeout(() => navigate('/dashboard'), 1500)
     },
   })
 
@@ -188,7 +188,7 @@ export default function EditUserPage() {
           <div className="flex gap-3">
             <button
               type="button"
-              onClick={() => navigate('/dashboard/users')}
+              onClick={() => navigate('/dashboard')}
               className="flex-1 px-6 py-3 bg-slate-700 hover:bg-slate-600 text-white font-medium rounded-lg transition-colors"
             >
               Cancel

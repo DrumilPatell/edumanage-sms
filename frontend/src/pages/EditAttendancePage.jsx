@@ -83,7 +83,7 @@ const EditAttendancePage = () => {
       setSuccess('Attendance updated successfully!');
       
       setTimeout(() => {
-        navigate('/dashboard/attendance');
+        navigate('/dashboard');
       }, 1500);
     } catch (err) {
       setError(err.response?.data?.detail || 'Failed to update attendance');
@@ -240,7 +240,7 @@ const EditAttendancePage = () => {
             <div className="flex gap-4">
               <button
                 type="button"
-                onClick={() => navigate('/dashboard/attendance')}
+                onClick={() => navigate('/dashboard')}
                 className="flex-1 py-3 px-4 bg-slate-600 hover:bg-slate-500 text-white font-semibold rounded-lg transition-colors"
               >
                 Cancel

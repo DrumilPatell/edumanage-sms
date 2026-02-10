@@ -11,13 +11,16 @@ export default function DashboardLayout() {
   const navigate = useNavigate()
   const location = useLocation()
   const [sidebarOpen, setSidebarOpen] = useState(false)
+  const [showLogoutModal, setShowLogoutModal] = useState(false)
 
   const handleLogout = () => {
-    const confirmed = window.confirm('Are you sure you want to logout?')
-    if (confirmed) {
-      logout()
-      navigate('/')
-    }
+    setShowLogoutModal(true)
+  }
+
+  const confirmLogout = () => {
+    logout()
+    navigate('/')
+    setShowLogoutModal(false)
   }
 
   const navigation = [
@@ -153,6 +156,36 @@ export default function DashboardLayout() {
           <Outlet />
         </main>
       </div>
+
+      {showLogoutModal && (
+        <div className="fixed inset-0 bg-slate-900/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-gradient-to-br from-slate-800 to-slate-900 rounded-2xl border border-slate-700/50 p-6 max-w-md w-full shadow-2xl">
+            <div className="flex items-center justify-center w-16 h-16 bg-amber-500/10 rounded-full mx-auto mb-4">
+              <LogOut className="w-8 h-8 text-amber-400" />
+            </div>
+            <h3 className="text-xl font-semibold text-white text-center mb-2">
+              Confirm Logout
+            </h3>
+            <p className="text-slate-400 text-center mb-6">
+              Are you sure you want to logout?
+            </p>
+            <div className="flex gap-3">
+              <button
+                onClick={() => setShowLogoutModal(false)}
+                className="flex-1 px-4 py-2.5 bg-slate-700/50 hover:bg-slate-700 text-white rounded-xl transition-colors font-medium"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={confirmLogout}
+                className="flex-1 px-4 py-2.5 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white rounded-xl transition-all font-medium shadow-lg shadow-amber-500/30"
+              >
+                Logout
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

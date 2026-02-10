@@ -91,7 +91,7 @@ export default function EditStudentPage() {
   const mutation = useMutation({
     mutationFn: (data) => studentsApi.updateStudent(id, data),
     onSuccess: () => {
-      setTimeout(() => navigate('/dashboard/students'), 1500)
+      setTimeout(() => navigate('/dashboard'), 1500)
     },
   })
 
@@ -194,7 +194,7 @@ export default function EditStudentPage() {
           className="flex items-center gap-2 text-amber-400 hover:text-amber-300 mb-6 transition-colors"
         >
           <ArrowLeft className="w-5 h-5" />
-          Back to Students
+          Back to Dashboard
         </button>
 
         <div className="bg-slate-800 rounded-2xl shadow-2xl p-8 border border-slate-700">
@@ -509,7 +509,7 @@ export default function EditStudentPage() {
             <div className="flex gap-4 pt-4">
               <button
                 type="button"
-                onClick={() => navigate('/dashboard/students')}
+                onClick={() => navigate('/dashboard')}
                 className="flex-1 px-6 py-3 bg-slate-700 hover:bg-slate-600 text-white font-medium rounded-lg transition-colors"
               >
                 Cancel

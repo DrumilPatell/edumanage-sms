@@ -119,7 +119,7 @@ const MarkAttendancePage = () => {
       setSuccess('Attendance marked successfully!');
       
       setTimeout(() => {
-        navigate('/dashboard/attendance');
+        navigate('/dashboard');
       }, 2000);
     } catch (err) {
       setError(err.response?.data?.detail || 'Failed to mark attendance');
@@ -132,11 +132,11 @@ const MarkAttendancePage = () => {
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 py-8 px-4">
       <div className="max-w-4xl mx-auto">
         <button
-          onClick={() => navigate('/dashboard/attendance')}
+          onClick={() => navigate('/dashboard')}
           className="flex items-center gap-2 text-amber-400 hover:text-amber-300 mb-6 transition-colors"
         >
           <ArrowLeft className="w-5 h-5" />
-          Back to Attendance
+          Back to Dashboard
         </button>
 
         <div className="bg-slate-800 rounded-2xl shadow-2xl p-8 border border-slate-700">

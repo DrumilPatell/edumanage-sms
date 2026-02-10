@@ -58,7 +58,7 @@ export default function LandingPage() {
               Experience premium student management with our sophisticated platform. 
               Streamline operations, enhance collaboration, and unlock unprecedented insights.
             </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <div className="flex justify-center">
               <Link
                 to="/login"
                 state={{ openRegister: true }}
@@ -66,9 +66,6 @@ export default function LandingPage() {
               >
                 Get Started Free
               </Link>
-              <button className="px-8 py-4 bg-slate-800/50 hover:bg-slate-700/50 text-white rounded-xl font-semibold border border-slate-700 transition-all">
-                Watch Demo
-              </button>
             </div>
           </div>
 
