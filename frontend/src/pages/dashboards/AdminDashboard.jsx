@@ -10,22 +10,22 @@ export default function AdminDashboard() {
   
   const { data: users = [] } = useQuery({
     queryKey: ['users'],
-    queryFn: () => usersApi.getUsers({ limit: 100 }),
+    queryFn: () => usersApi.getUsers({ limit: 1000 }),
   })
 
   const { data: students = [] } = useQuery({
     queryKey: ['students'],
-    queryFn: () => studentsApi.getStudents({ limit: 100 }),
+    queryFn: () => studentsApi.getStudents({ limit: 1000 }),
   })
 
   const { data: courses = [] } = useQuery({
     queryKey: ['courses'],
-    queryFn: () => coursesApi.getCourses({ limit: 100 }),
+    queryFn: () => coursesApi.getCourses({ limit: 1000 }),
   })
 
   const { data: enrollments = [] } = useQuery({
     queryKey: ['enrollments'],
-    queryFn: () => enrollmentsApi.getEnrollments({ limit: 100 }),
+    queryFn: () => enrollmentsApi.getEnrollments({ limit: 1000 }),
   })
 
   const stats = [

@@ -68,21 +68,24 @@ export default function EditUserPage() {
   }
 
   return (
-    <div className="max-w-2xl mx-auto space-y-6 p-6">
-      <div className="flex items-center gap-4">
-        <button
-          onClick={() => navigate('/dashboard/users')}
-          className="p-2 hover:bg-slate-800 rounded-lg transition-colors"
-        >
-          <ArrowLeft className="w-5 h-5 text-slate-400" />
-        </button>
-        <div>
-          <h1 className="text-2xl font-bold text-white">Edit User</h1>
-          <p className="text-slate-400 mt-1">Update user information</p>
-        </div>
-      </div>
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 py-8 px-4">
+      <button
+        onClick={() => navigate('/dashboard/users')}
+        className="fixed top-6 left-6 flex items-center gap-2 text-slate-400 hover:text-amber-400 transition-colors z-10"
+      >
+        <ArrowLeft className="w-5 h-5" />
+        <span>Back to Users</span>
+      </button>
 
-      <div className="card">
+      <div className="max-w-2xl mx-auto space-y-6">
+        <div className="flex items-center gap-4">
+          <div>
+            <h1 className="text-2xl font-bold text-white">Edit User</h1>
+            <p className="text-slate-400 mt-1">Update user information</p>
+          </div>
+        </div>
+
+        <div className="card">
         <form onSubmit={handleSubmit} className="space-y-6">
           <div>
             <label htmlFor="email" className="block text-sm font-medium text-slate-300 mb-2">
@@ -204,6 +207,7 @@ export default function EditUserPage() {
           </div>
         </form>
       </div>
+    </div>
     </div>
   )
 }

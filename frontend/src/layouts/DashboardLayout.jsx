@@ -95,9 +95,9 @@ export default function DashboardLayout() {
             </ul>
           </nav>
 
-          {/* User info & logout */}
+          {/* User info */}
           <div className="p-4 border-t border-slate-700/50">
-            <div className="flex items-center gap-3 mb-3">
+            <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-full bg-gradient-to-br from-amber-400 to-amber-600 flex items-center justify-center shadow-lg shadow-amber-500/30">
                 <span className="text-sm font-semibold text-white">
                   {user?.full_name?.charAt(0) || 'U'}
@@ -120,13 +120,6 @@ export default function DashboardLayout() {
                 )}
               </div>
             </div>
-            <button
-              onClick={handleLogout}
-              className="w-full flex items-center justify-center gap-2 px-3 py-2 text-sm font-medium text-slate-300 hover:text-white hover:bg-slate-800/50 rounded-lg transition-colors"
-            >
-              <LogOut className="w-4 h-4" />
-              Logout
-            </button>
           </div>
         </div>
       </aside>
@@ -136,18 +129,27 @@ export default function DashboardLayout() {
         {/* Top bar */}
         <header className="sticky top-0 z-30 bg-slate-900/95 backdrop-blur-xl border-b border-slate-700/50">
           <div className="flex items-center justify-between px-4 py-3">
-            <button
-              onClick={() => setSidebarOpen(!sidebarOpen)}
-              className="lg:hidden p-2 text-slate-300 hover:text-white hover:bg-slate-800/50 rounded-lg"
-            >
-              {sidebarOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
-            </button>
-            
-            <div className="flex-1 lg:flex-none">
+            <div className="flex items-center gap-4">
+              <button
+                onClick={() => setSidebarOpen(!sidebarOpen)}
+                className="lg:hidden p-2 text-slate-300 hover:text-white hover:bg-slate-800/50 rounded-lg"
+              >
+                {sidebarOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+              </button>
+              
               <h2 className="text-lg font-semibold text-white">
                 {navigation.find(item => item.href === location.pathname)?.name || 'Dashboard'}
               </h2>
             </div>
+
+            {/* Logout - Top Right */}
+            <button
+              onClick={handleLogout}
+              className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-slate-300 hover:text-white hover:bg-red-500/20 hover:border-red-500/30 border border-transparent rounded-lg transition-all"
+            >
+              <LogOut className="w-4 h-4" />
+              <span className="hidden sm:inline">Logout</span>
+            </button>
           </div>
         </header>
 

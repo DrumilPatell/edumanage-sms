@@ -12,11 +12,11 @@ router = APIRouter()
 @router.get("/", response_model=List[CourseWithFaculty])
 async def get_courses(
     skip: int = Query(0, ge=0),
-    limit: int = Query(100, ge=1, le=100),
+    limit: int = Query(100, ge=1, le=1000),
     semester: Optional[str] = None,
     is_active: Optional[bool] = None,
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user)
+    _current_user: User = Depends(get_current_user)
 ):
     query = db.query(Course)
     
@@ -44,7 +44,7 @@ async def get_courses(
 async def get_course(
     course_id: int,
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user)
+    _current_user: User = Depends(get_current_user)
 ):
     course = db.query(Course).filter(Course.id == course_id).first()
     if not course:
@@ -66,7 +66,7 @@ async def get_course(
 async def create_course(
     course: CourseCreate,
     db: Session = Depends(get_db),
-    current_user: User = Depends(require_admin)
+    _current_user: User = Depends(require_admin)
 ):
     existing_course = db.query(Course).filter(Course.course_code == course.course_code).first()
     if existing_course:
@@ -95,7 +95,7 @@ async def update_course(
     course_id: int,
     course_update: CourseUpdate,
     db: Session = Depends(get_db),
-    current_user: User = Depends(require_admin)
+    _current_user: User = Depends(require_admin)
 ):
     course = db.query(Course).filter(Course.id == course_id).first()
     if not course:
@@ -125,7 +125,7 @@ async def update_course(
 async def bulk_update_course_semester(
     semester: str = Query(..., description="New semester value for all courses"),
     db: Session = Depends(get_db),
-    current_user: User = Depends(require_faculty)
+    _current_user: User = Depends(require_faculty)
 ):
     """Update semester for all courses at once (Admin/Faculty only)"""
     result = db.query(Course).update({"semester": semester})
@@ -137,7 +137,7 @@ async def bulk_update_course_semester(
 async def delete_course(
     course_id: int,
     db: Session = Depends(get_db),
-    current_user: User = Depends(require_admin)
+    _current_user: User = Depends(require_admin)
 ):
     course = db.query(Course).filter(Course.id == course_id).first()
     if not course:

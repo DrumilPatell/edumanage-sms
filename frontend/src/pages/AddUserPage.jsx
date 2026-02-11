@@ -37,15 +37,15 @@ const AddUserPage = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 py-8 px-4">
-      <div className="max-w-2xl mx-auto">
-        <button
-          onClick={() => navigate('/dashboard')}
-          className="flex items-center gap-2 text-amber-400 hover:text-amber-300 mb-6 transition-colors"
-        >
-          <ArrowLeft className="w-5 h-5" />
-          Back to Dashboard
-        </button>
+      <button
+        onClick={() => navigate('/dashboard')}
+        className="fixed top-6 left-6 flex items-center gap-2 text-slate-400 hover:text-amber-400 transition-colors z-10"
+      >
+        <ArrowLeft className="w-5 h-5" />
+        <span>Back to Dashboard</span>
+      </button>
 
+      <div className="max-w-2xl mx-auto">
         <div className="bg-slate-800 rounded-2xl shadow-2xl p-8 border border-slate-700">
           <div className="flex items-center gap-3 mb-8">
             <div className="w-12 h-12 bg-amber-500 rounded-xl flex items-center justify-center">
