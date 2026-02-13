@@ -94,9 +94,12 @@ export default function AdminDashboard() {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Recent Students */}
         <div className="card">
-          <h3 className="text-lg font-semibold text-white mb-4">Recent Students</h3>
-          <div className="space-y-3">
-            {students.slice(0, 5).map((student) => (
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-lg font-semibold text-white">Recent Students</h3>
+            <span className="text-sm text-slate-400 bg-slate-700/50 px-2 py-1 rounded-lg">Total: {students.length}</span>
+          </div>
+          <div className="space-y-3 max-h-80 overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-slate-600 scrollbar-track-slate-800">
+            {students.map((student) => (
               <div key={student.id} className="flex items-center gap-3 p-3 bg-slate-800/50 border border-slate-700/50 rounded-lg hover:bg-slate-700/50 transition-colors">
                 <div className="w-10 h-10 rounded-full bg-gradient-to-br from-amber-400 to-amber-600 flex items-center justify-center shadow-lg shadow-amber-500/30">
                   <span className="text-sm font-semibold text-white">
@@ -118,9 +121,12 @@ export default function AdminDashboard() {
 
         {/* Recent Courses */}
         <div className="card">
-          <h3 className="text-lg font-semibold text-white mb-4">Active Courses</h3>
-          <div className="space-y-3">
-            {courses.slice(0, 5).map((course) => (
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-lg font-semibold text-white">Active Courses</h3>
+            <span className="text-sm text-slate-400 bg-slate-700/50 px-2 py-1 rounded-lg">Total: {courses.length}</span>
+          </div>
+          <div className="space-y-3 max-h-80 overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-slate-600 scrollbar-track-slate-800">
+            {courses.map((course) => (
               <div key={course.id} className="flex items-center justify-between p-3 bg-slate-800/50 border border-slate-700/50 rounded-lg hover:bg-slate-700/50 transition-colors">
                 <div className="flex-1 min-w-0">
                   <p className="font-medium text-white truncate">{course.course_name}</p>

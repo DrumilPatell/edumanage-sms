@@ -73,7 +73,12 @@ export default function StudentsPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-white">Students</h1>
+          <div className="flex items-center gap-3">
+            <h1 className="text-2xl font-bold text-white">Students</h1>
+            <span className="text-sm text-slate-400 bg-slate-700/50 px-3 py-1 rounded-full border border-slate-600">
+              {students.length} total
+            </span>
+          </div>
           <p className="text-slate-400 mt-1">Manage student profiles and academic information</p>
         </div>
         <div className="flex items-center gap-3">

@@ -94,8 +94,11 @@ export default function StudentDashboard() {
 
       {/* My Courses */}
       <div className="card">
-        <h3 className="text-lg font-semibold text-white mb-4">My Courses</h3>
-        <div className="space-y-3">
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="text-lg font-semibold text-white">My Courses</h3>
+          <span className="text-sm text-slate-400 bg-slate-700/50 px-2 py-1 rounded-lg">Total: {enrollments.length}</span>
+        </div>
+        <div className="space-y-3 max-h-80 overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-slate-600 scrollbar-track-slate-800">
           {enrollments.map((enrollment) => (
             <div key={enrollment.id} className="flex items-center justify-between p-4 bg-slate-800/50 border border-slate-700/50 rounded-lg hover:bg-slate-700/50 transition-colors">
               <div className="flex-1">
