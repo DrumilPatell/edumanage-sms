@@ -1,18 +1,16 @@
 import { useState, useEffect } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate, useParams, useLocation } from 'react-router-dom';
 import { ArrowLeft, Award, BookOpen, User, Hash, FileText, Calendar } from 'lucide-react';
 import api from '../lib/api';
 
-const GradePage = () => {
+const EditGradePage = () => {
   const navigate = useNavigate();
+  const { id } = useParams();
   const location = useLocation();
-  const backPath = location.state?.from || '/dashboard';
-  const backLabel = backPath === '/dashboard/grades' ? 'Back to Grades' : 'Back to Dashboard';
-  const [allCourses, setAllCourses] = useState([]);
-  const [enrolledCourses, setEnrolledCourses] = useState([]);
+  const backPath = location.state?.from || '/dashboard/grades';
+  const [courses, setCourses] = useState([]);
   const [students, setStudents] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [loadingCourses, setLoadingCourses] = useState(false);
   const [formData, setFormData] = useState({
     student_id: '',
     course_id: '',
@@ -21,7 +19,7 @@ const GradePage = () => {
     score: '',
     max_score: '100',
     letter_grade: '',
-    date_assessed: new Date().toISOString().split('T')[0],
+    date_assessed: '',
     remarks: ''
   });
   const [displayDate, setDisplayDate] = useState('');
@@ -31,70 +29,45 @@ const GradePage = () => {
 
   useEffect(() => {
     fetchData();
-    // Initialize display date
-    const today = new Date().toISOString().split('T')[0];
-    const [year, month, day] = today.split('-');
-    setDisplayDate(`${day}-${month}-${year}`);
-  }, []);
+  }, [id]);
 
   const fetchData = async () => {
     try {
-      const [coursesRes, studentsRes] = await Promise.all([
+      const [coursesRes, studentsRes, gradeRes] = await Promise.all([
         api.get('/courses/'),
-        api.get('/students/')
+        api.get('/students/'),
+        api.get(`/academic/grades/${id}`)
       ]);
-      setAllCourses(coursesRes.data);
+      setCourses(coursesRes.data);
       setStudents(studentsRes.data);
+      
+      const grade = gradeRes.data;
+      const dateStr = grade.date_assessed || '';
+      setFormData({
+        student_id: grade.student_id?.toString() || '',
+        course_id: grade.course_id?.toString() || '',
+        assessment_type: grade.assessment_type || '',
+        assessment_name: grade.assessment_name || '',
+        score: grade.score?.toString() || '',
+        max_score: grade.max_score?.toString() || '100',
+        letter_grade: grade.letter_grade || '',
+        date_assessed: dateStr,
+        remarks: grade.remarks || ''
+      });
+      if (dateStr) {
+        const [year, month, day] = dateStr.split('-');
+        setDisplayDate(`${day}-${month}-${year}`);
+      }
     } catch (err) {
       console.error('Failed to fetch data:', err);
+      setError('Failed to load grade data');
     } finally {
       setLoading(false);
     }
   };
 
-  const fetchEnrolledCourses = async (studentId) => {
-    if (!studentId) {
-      setEnrolledCourses([]);
-      return;
-    }
-    setLoadingCourses(true);
-    try {
-      const res = await api.get(`/enrollments/student/${studentId}/courses`);
-      // Extract course info from enrollments
-      const courseIds = res.data.map(enrollment => enrollment.course_id);
-      const filtered = allCourses.filter(course => courseIds.includes(course.id));
-      setEnrolledCourses(filtered);
-    } catch (err) {
-      console.error('Failed to fetch enrolled courses:', err);
-      setEnrolledCourses([]);
-    } finally {
-      setLoadingCourses(false);
-    }
-  };
-
-  const handleDisplayDateChange = (e) => {
-    const value = e.target.value;
-    setDisplayDate(value);
-    if (value.length === 10) {
-      const [day, month, year] = value.split('-');
-      setFormData(prev => ({ ...prev, date_assessed: `${year}-${month}-${day}` }));
-    }
-  };
-
   const handleChange = (e) => {
     const { name, value } = e.target;
-    
-    // If student changes, fetch their enrolled courses and reset course selection
-    if (name === 'student_id') {
-      setFormData(prev => ({
-        ...prev,
-        student_id: value,
-        course_id: ''
-      }));
-      fetchEnrolledCourses(value);
-      setError('');
-      return;
-    }
     
     // Handle date change from date picker
     if (name === 'date_assessed') {
@@ -133,6 +106,15 @@ const GradePage = () => {
     }
   };
 
+  const handleDisplayDateChange = (e) => {
+    const value = e.target.value;
+    setDisplayDate(value);
+    if (value.length === 10) {
+      const [day, month, year] = value.split('-');
+      setFormData(prev => ({ ...prev, date_assessed: `${year}-${month}-${day}` }));
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setSubmitting(true);
@@ -140,7 +122,7 @@ const GradePage = () => {
     setSuccess('');
 
     try {
-      await api.post('/academic/grades/', {
+      await api.put(`/academic/grades/${id}`, {
         student_id: parseInt(formData.student_id),
         course_id: parseInt(formData.course_id),
         assessment_type: formData.assessment_type,
@@ -152,27 +134,13 @@ const GradePage = () => {
         remarks: formData.remarks || null
       });
 
-      setSuccess('Grade added successfully!');
-      const today = new Date().toISOString().split('T')[0];
-      const [year, month, day] = today.split('-');
-      setDisplayDate(`${day}-${month}-${year}`);
-      setFormData({
-        student_id: '',
-        course_id: '',
-        assessment_type: '',
-        assessment_name: '',
-        score: '',
-        max_score: '100',
-        letter_grade: '',
-        date_assessed: today,
-        remarks: ''
-      });
+      setSuccess('Grade updated successfully!');
       
       setTimeout(() => {
         navigate(backPath);
       }, 2000);
     } catch (err) {
-      setError(err.response?.data?.detail || 'Failed to add grade');
+      setError(err.response?.data?.detail || 'Failed to update grade');
     } finally {
       setSubmitting(false);
     }
@@ -193,7 +161,7 @@ const GradePage = () => {
         className="fixed top-6 left-6 flex items-center gap-2 text-slate-400 hover:text-amber-400 transition-colors z-10"
       >
         <ArrowLeft className="w-5 h-5" />
-        <span>{backLabel}</span>
+        <span>Back to Grades</span>
       </button>
 
       <div className="max-w-2xl mx-auto">
@@ -203,8 +171,8 @@ const GradePage = () => {
               <Award className="w-6 h-6 text-slate-900" />
             </div>
             <div>
-              <h1 className="text-3xl font-bold text-white">Add Grade</h1>
-              <p className="text-slate-400">Record student assessment grades</p>
+              <h1 className="text-3xl font-bold text-white">Edit Grade</h1>
+              <p className="text-slate-400">Update student assessment grade</p>
             </div>
           </div>
 
@@ -260,19 +228,10 @@ const GradePage = () => {
                   value={formData.course_id}
                   onChange={handleChange}
                   required
-                  disabled={!formData.student_id || loadingCourses}
-                  className="w-full pl-11 pr-10 py-3 bg-slate-700 border border-slate-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent appearance-none cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="w-full pl-11 pr-10 py-3 bg-slate-700 border border-slate-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent appearance-none cursor-pointer"
                 >
-                  <option value="">
-                    {!formData.student_id 
-                      ? 'Select a student first' 
-                      : loadingCourses 
-                        ? 'Loading courses...' 
-                        : enrolledCourses.length === 0 
-                          ? 'No enrolled courses found' 
-                          : 'Choose a course'}
-                  </option>
-                  {enrolledCourses.map((course) => (
+                  <option value="">Choose a course</option>
+                  {courses.map((course) => (
                     <option key={course.id} value={course.id}>
                       {course.course_code} - {course.course_name}
                     </option>
@@ -284,9 +243,6 @@ const GradePage = () => {
                   </svg>
                 </div>
               </div>
-              {formData.student_id && !loadingCourses && enrolledCourses.length === 0 && (
-                <p className="mt-2 text-sm text-amber-400">This student is not enrolled in any courses.</p>
-              )}
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -325,11 +281,11 @@ const GradePage = () => {
                 <div className="relative">
                   <Calendar 
                     className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400 cursor-pointer hover:text-amber-400 transition-colors z-10" 
-                    onClick={() => document.getElementById('grade_date_picker').showPicker()}
+                    onClick={() => document.getElementById('edit_grade_date_picker').showPicker()}
                   />
                   <input
                     type="date"
-                    id="grade_date_picker"
+                    id="edit_grade_date_picker"
                     name="date_assessed"
                     value={formData.date_assessed}
                     onChange={handleChange}
@@ -477,7 +433,7 @@ const GradePage = () => {
               disabled={submitting}
               className="w-full py-3 px-4 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white font-semibold rounded-lg transition-all duration-200 transform hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
             >
-              {submitting ? 'Adding Grade...' : 'Add Grade'}
+              {submitting ? 'Updating Grade...' : 'Update Grade'}
             </button>
           </form>
         </div>
@@ -486,4 +442,4 @@ const GradePage = () => {
   );
 };
 
-export default GradePage;
+export default EditGradePage;

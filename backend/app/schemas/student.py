@@ -1,5 +1,5 @@
 from pydantic import BaseModel, Field
-from typing import Optional
+from typing import Optional, Literal
 from datetime import datetime, date
 
 
@@ -14,6 +14,7 @@ class StudentBase(BaseModel):
     enrollment_year: Optional[int] = None
     program: Optional[str] = None
     current_semester: Optional[str] = None
+    status: Optional[Literal["active", "withdrawn", "completed"]] = "active"
 
 
 class StudentCreate(StudentBase):
@@ -37,12 +38,14 @@ class StudentUpdate(BaseModel):
     program: Optional[str] = None
     current_semester: Optional[str] = None
     gpa: Optional[float] = None
+    status: Optional[Literal["active", "withdrawn", "completed"]] = None
 
 
 class StudentResponse(StudentBase):
     id: int
     user_id: int
     gpa: Optional[float] = None
+    status: Optional[str] = "active"
     created_at: datetime
     updated_at: Optional[datetime] = None
     
@@ -55,3 +58,4 @@ class StudentWithUser(StudentResponse):
     full_name: str
     profile_picture: Optional[str] = None
     is_active: bool
+    status: Optional[str] = "active"

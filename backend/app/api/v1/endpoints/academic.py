@@ -6,7 +6,7 @@ from app.db.database import get_db
 from app.db.models import User, Attendance, Grade, Student, Course
 from app.schemas.academic import (
     AttendanceCreate, AttendanceUpdate, AttendanceResponse, AttendanceWithDetails,
-    GradeCreate, GradeUpdate, GradeResponse
+    GradeCreate, GradeUpdate, GradeResponse, GradeWithDetails
 )
 from app.auth.dependencies import get_current_user, require_faculty
 
@@ -201,17 +201,29 @@ async def delete_attendance(
     return None
 
 
-@router.get("/grades/", response_model=List[GradeResponse])
+@router.get("/grades/", response_model=List[GradeWithDetails])
 async def get_grades(
     skip: int = Query(0, ge=0),
-    limit: int = Query(100, ge=1, le=100),
+    limit: int = Query(500, ge=1, le=500),
     student_id: Optional[int] = None,
     course_id: Optional[int] = None,
     assessment_type: Optional[str] = None,
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
-    query = db.query(Grade)
+    query = db.query(
+        Grade,
+        User.full_name.label('student_name'),
+        Student.student_id.label('student_code'),
+        Course.course_name.label('course_name'),
+        Course.course_code.label('course_code')
+    ).join(
+        Student, Grade.student_id == Student.id
+    ).join(
+        User, Student.user_id == User.id
+    ).join(
+        Course, Grade.course_id == Course.id
+    )
     
     if student_id:
         query = query.filter(Grade.student_id == student_id)
@@ -220,8 +232,31 @@ async def get_grades(
     if assessment_type:
         query = query.filter(Grade.assessment_type == assessment_type)
     
-    grades = query.offset(skip).limit(limit).all()
-    return [GradeResponse.model_validate(grade) for grade in grades]
+    records = query.order_by(Grade.date_assessed.desc().nullslast(), Grade.id.desc()).offset(skip).limit(limit).all()
+    
+    result = []
+    for record, student_name, student_code, course_name, course_code in records:
+        record_dict = {
+            "id": record.id,
+            "student_id": record.student_id,
+            "course_id": record.course_id,
+            "assessment_type": record.assessment_type,
+            "assessment_name": record.assessment_name,
+            "score": record.score,
+            "max_score": record.max_score,
+            "percentage": record.percentage,
+            "letter_grade": record.letter_grade,
+            "date_assessed": record.date_assessed,
+            "remarks": record.remarks,
+            "created_at": record.created_at,
+            "student_name": student_name,
+            "student_code": student_code,
+            "course_name": course_name,
+            "course_code": course_code
+        }
+        result.append(GradeWithDetails(**record_dict))
+    
+    return result
 
 
 @router.post("/grades/", response_model=GradeResponse, status_code=status.HTTP_201_CREATED)
@@ -242,8 +277,85 @@ async def create_grade(
     return GradeResponse.model_validate(db_grade)
 
 
+@router.get("/grades/{grade_id}", response_model=GradeWithDetails)
+async def get_grade_by_id(
+    grade_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    result = db.query(
+        Grade,
+        User.full_name.label('student_name'),
+        Student.student_id.label('student_code'),
+        Course.course_name.label('course_name'),
+        Course.course_code.label('course_code')
+    ).join(
+        Student, Grade.student_id == Student.id
+    ).join(
+        User, Student.user_id == User.id
+    ).join(
+        Course, Grade.course_id == Course.id
+    ).filter(Grade.id == grade_id).first()
+    
+    if not result:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Grade record not found"
+        )
+    
+    record, student_name, student_code, course_name, course_code = result
+    return GradeWithDetails(
+        id=record.id,
+        student_id=record.student_id,
+        course_id=record.course_id,
+        assessment_type=record.assessment_type,
+        assessment_name=record.assessment_name,
+        score=record.score,
+        max_score=record.max_score,
+        percentage=record.percentage,
+        letter_grade=record.letter_grade,
+        date_assessed=record.date_assessed,
+        remarks=record.remarks,
+        created_at=record.created_at,
+        student_name=student_name,
+        student_code=student_code,
+        course_name=course_name,
+        course_code=course_code
+    )
+
+
 @router.patch("/grades/{grade_id}", response_model=GradeResponse)
 async def update_grade(
+    grade_id: int,
+    grade_update: GradeUpdate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_faculty)
+):
+    grade = db.query(Grade).filter(Grade.id == grade_id).first()
+    if not grade:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Grade record not found"
+        )
+    
+    update_data = grade_update.model_dump(exclude_unset=True)
+    for field, value in update_data.items():
+        setattr(grade, field, value)
+    
+    if "score" in update_data or "max_score" in update_data:
+        max_score_val = getattr(grade, 'max_score', 0)
+        if max_score_val > 0:
+            score_val = getattr(grade, 'score', 0)
+            percentage_value = (score_val / max_score_val) * 100
+            setattr(grade, 'percentage', percentage_value)
+    
+    db.commit()
+    db.refresh(grade)
+    return GradeResponse.model_validate(grade)
+
+
+@router.put("/grades/{grade_id}", response_model=GradeResponse)
+async def update_grade_full(
     grade_id: int,
     grade_update: GradeUpdate,
     db: Session = Depends(get_db),

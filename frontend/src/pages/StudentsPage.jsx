@@ -148,8 +148,8 @@ export default function StudentsPage() {
                       <p className="text-sm text-slate-400">{student.student_id}</p>
                     </div>
                   </div>
-                  <span className={`badge ${student.is_active ? 'badge-success' : 'badge-danger'}`}>
-                    {student.is_active ? 'Active' : 'Inactive'}
+                  <span className={`badge ${student.status === 'active' ? 'badge-success' : student.status === 'withdrawn' ? 'badge-danger' : 'badge-warning'}`}>
+                    {student.status === 'active' ? 'Active' : student.status === 'withdrawn' ? 'Withdrawn' : 'Completed'}
                   </span>
                 </div>
 

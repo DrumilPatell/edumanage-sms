@@ -51,13 +51,20 @@ const EditAttendancePage = () => {
     }
   };
 
-  const handleDateChange = (e) => {
-    const value = e.target.value;
-    setFormData(prev => ({ ...prev, date: value }));
-    if (value) {
-      const [year, month, day] = value.split('-');
-      setDisplayDate(`${day}-${month}-${year}`);
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    
+    // Handle date change from date picker
+    if (name === 'date') {
+      setFormData(prev => ({ ...prev, date: value }));
+      if (value) {
+        const [year, month, day] = value.split('-');
+        setDisplayDate(`${day}-${month}-${year}`);
+      }
+      return;
     }
+    
+    setFormData(prev => ({ ...prev, [name]: value }));
   };
 
   const handleDisplayDateChange = (e) => {
@@ -183,8 +190,9 @@ const EditAttendancePage = () => {
                 <input
                   type="date"
                   id="edit_attendance_date"
+                  name="date"
                   value={formData.date}
-                  onChange={handleDateChange}
+                  onChange={handleChange}
                   className="absolute left-0 top-0 w-11 h-full opacity-0 cursor-pointer z-20"
                   style={{ colorScheme: 'dark' }}
                 />

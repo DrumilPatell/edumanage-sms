@@ -68,3 +68,10 @@ class GradeResponse(GradeBase):
     
     class Config:
         from_attributes = True
+
+
+class GradeWithDetails(GradeResponse):
+    student_name: Optional[str] = None
+    student_code: Optional[str] = None
+    course_name: Optional[str] = None
+    course_code: Optional[str] = None

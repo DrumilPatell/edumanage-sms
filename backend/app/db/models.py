@@ -11,6 +11,12 @@ class RoleEnum(str, enum.Enum):
     STUDENT = "student"
 
 
+class StudentStatusEnum(str, enum.Enum):
+    ACTIVE = "active"
+    WITHDRAWN = "withdrawn"
+    COMPLETED = "completed"
+
+
 class User(Base):
     __tablename__ = "users"
     
@@ -50,6 +56,7 @@ class Student(Base):
     program = Column(String(100), nullable=True)
     current_semester = Column(String(50), nullable=True)
     gpa = Column(Float, nullable=True)
+    status = Column(String(20), nullable=False, default="active")
     
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())

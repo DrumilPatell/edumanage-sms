@@ -143,7 +143,8 @@ async def create_student_with_user(
             address=student.address,
             enrollment_year=student.enrollment_year,
             program=student.program,
-            current_semester=student.current_semester
+            current_semester=student.current_semester,
+            status=student.status or "active"
         )
         db.add(db_student)
         db.commit()
@@ -176,7 +177,8 @@ async def create_student_with_user(
         address=student.address,
         enrollment_year=student.enrollment_year,
         program=student.program,
-        current_semester=student.current_semester
+        current_semester=student.current_semester,
+        status=student.status or "active"
     )
     db.add(db_student)
     db.commit()

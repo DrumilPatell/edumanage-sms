@@ -43,6 +43,7 @@ import EditCoursePage from './pages/EditCoursePage'
 import EditStudentPage from './pages/EditStudentPage'
 import EditEnrollmentPage from './pages/EditEnrollmentPage'
 import EditAttendancePage from './pages/EditAttendancePage'
+import EditGradePage from './pages/EditGradePage'
 import ForgotPasswordPage from './pages/ForgotPasswordPage'
 
 function PrivateRoute({ children, allowedRoles }) {
@@ -202,6 +203,12 @@ function App() {
         <Route path="/assign-grade" element={
           <PrivateRoute allowedRoles={['admin', 'faculty']}>
             <GradePage />
+          </PrivateRoute>
+        } />
+
+        <Route path="/edit-grade/:id" element={
+          <PrivateRoute allowedRoles={['admin', 'faculty']}>
+            <EditGradePage />
           </PrivateRoute>
         } />
 

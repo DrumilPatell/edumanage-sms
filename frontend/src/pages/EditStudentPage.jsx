@@ -20,7 +20,8 @@ export default function EditStudentPage() {
     year_level: '',
     current_semester: '',
     gpa: '',
-    gpa_scale: 'us'
+    gpa_scale: 'us',
+    status: 'active'
   });
 
   const [errors, setErrors] = useState({})
@@ -86,7 +87,8 @@ export default function EditStudentPage() {
         year_level: student.year_level || '',
         current_semester: student.current_semester || '',
         gpa: student.gpa || '',
-        gpa_scale: detectedScale
+        gpa_scale: detectedScale,
+        status: student.status || 'active'
       })
       setDisplayDOB(formatDateToDisplay(student.date_of_birth || ''))
       setDisplayEnrollmentDate(formatDateToDisplay(student.enrollment_date || ''))
@@ -513,6 +515,30 @@ export default function EditStudentPage() {
                 {errors.gpa && (
                   <p className="text-red-400 text-sm mt-1">{errors.gpa}</p>
                 )}
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-slate-300 mb-2">
+                Status
+              </label>
+              <div className="relative">
+                <User className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
+                <select
+                  name="status"
+                  value={formData.status}
+                  onChange={handleChange}
+                  className="w-full pl-11 pr-10 py-3 bg-slate-700 border border-slate-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent appearance-none cursor-pointer"
+                >
+                  <option value="active">Active</option>
+                  <option value="withdrawn">Withdrawn</option>
+                  <option value="completed">Completed Study</option>
+                </select>
+                <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none">
+                  <svg className="w-5 h-5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
+                  </svg>
+                </div>
               </div>
             </div>
 
