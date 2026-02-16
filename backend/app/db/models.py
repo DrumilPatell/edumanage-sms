@@ -42,6 +42,9 @@ class Student(Base):
     date_of_birth = Column(Date, nullable=True)
     phone = Column(String(20), nullable=True)
     address = Column(Text, nullable=True)
+    gender = Column(String(20), nullable=True)
+    enrollment_date = Column(Date, nullable=True)
+    year_level = Column(Integer, nullable=True)
     
     enrollment_year = Column(Integer, nullable=True)
     program = Column(String(100), nullable=True)

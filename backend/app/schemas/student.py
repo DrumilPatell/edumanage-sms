@@ -8,6 +8,9 @@ class StudentBase(BaseModel):
     date_of_birth: Optional[date] = None
     phone: Optional[str] = None
     address: Optional[str] = None
+    gender: Optional[str] = None
+    enrollment_date: Optional[date] = None
+    year_level: Optional[int] = None
     enrollment_year: Optional[int] = None
     program: Optional[str] = None
     current_semester: Optional[str] = None
@@ -27,6 +30,9 @@ class StudentUpdate(BaseModel):
     date_of_birth: Optional[date] = None
     phone: Optional[str] = None
     address: Optional[str] = None
+    gender: Optional[str] = None
+    enrollment_date: Optional[date] = None
+    year_level: Optional[int] = None
     enrollment_year: Optional[int] = None
     program: Optional[str] = None
     current_semester: Optional[str] = None
