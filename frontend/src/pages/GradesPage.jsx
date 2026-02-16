@@ -1,17 +1,29 @@
+import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { useNavigate } from 'react-router-dom'
 import { academicApi } from '../services/api'
 import { useAuthStore } from '../store/authStore'
-import { Plus } from 'lucide-react'
+import { Plus, Search } from 'lucide-react'
 
 export default function GradesPage() {
   const navigate = useNavigate()
   const { user } = useAuthStore()
   const canEdit = user?.role === 'admin' || user?.role === 'faculty'
+  const [searchTerm, setSearchTerm] = useState('')
   
   const { data: grades = [], isLoading } = useQuery({
     queryKey: ['grades'],
     queryFn: () => academicApi.getGrades({ limit: 100 }),
+  })
+
+  const filteredGrades = grades.filter((grade) => {
+    const term = searchTerm.toLowerCase()
+    return (
+      grade.assessment_name?.toLowerCase().includes(term) ||
+      grade.assessment_type?.toLowerCase().includes(term) ||
+      grade.letter_grade?.toLowerCase().includes(term) ||
+      String(grade.student_id).toLowerCase().includes(term)
+    )
   })
 
   const getGradeBadge = (percentage) => {
@@ -30,13 +42,25 @@ export default function GradesPage() {
         </div>
         {canEdit && (
           <button 
-            onClick={() => navigate('/assign-grade')}
+            onClick={() => navigate('/assign-grade', { state: { from: '/dashboard/grades' } })}
             className="btn-primary flex items-center gap-2"
           >
             <Plus className="w-4 h-4" />
             Add Grade
           </button>
         )}
+      </div>
+
+      {/* Search Bar */}
+      <div className="relative">
+        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-slate-400" />
+        <input
+          type="text"
+          placeholder="Search by assessment name, type, student ID, or grade..."
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          className="w-full pl-10 pr-4 py-2 bg-slate-800 border border-slate-700 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:border-amber-500 transition-colors"
+        />
       </div>
 
       <div className="card">
@@ -58,7 +82,7 @@ export default function GradesPage() {
                 </tr>
               </thead>
               <tbody>
-                {grades.map((grade) => (
+                {filteredGrades.map((grade) => (
                   <tr key={grade.id} className="border-b border-slate-700/30 hover:bg-slate-800/50 transition-colors">
                     <td className="py-3 px-4">
                       <p className="font-medium text-white">{grade.assessment_name}</p>
@@ -91,8 +115,10 @@ export default function GradesPage() {
                 ))}
               </tbody>
             </table>
-            {grades.length === 0 && (
-              <p className="text-center py-12 text-slate-400">No grades found</p>
+            {filteredGrades.length === 0 && (
+              <p className="text-center py-12 text-slate-400">
+                {searchTerm ? 'No grades match your search' : 'No grades found'}
+              </p>
             )}
           </div>
         )}

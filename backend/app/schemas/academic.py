@@ -33,6 +33,7 @@ class AttendanceResponse(AttendanceBase):
 
 class AttendanceWithDetails(AttendanceResponse):
     student_name: Optional[str] = None
+    student_code: Optional[str] = None  # STU001 format
     course_name: Optional[str] = None
     course_code: Optional[str] = None
 

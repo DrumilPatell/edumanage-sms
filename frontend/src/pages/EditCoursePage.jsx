@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useMutation, useQuery } from '@tanstack/react-query';
-import { coursesApi } from '../services/api';
+import { coursesApi, semestersApi } from '../services/api';
 import { ArrowLeft, BookOpen, FileText, Hash, Clock, Save } from 'lucide-react';
 
 export default function EditCoursePage() {
@@ -18,6 +18,11 @@ export default function EditCoursePage() {
   const { data: course, isLoading } = useQuery({
     queryKey: ['course', id],
     queryFn: () => coursesApi.getCourse(id),
+  });
+
+  const { data: semesters = [] } = useQuery({
+    queryKey: ['semesters'],
+    queryFn: semestersApi.getSemesters,
   });
 
   useEffect(() => {
@@ -38,7 +43,7 @@ export default function EditCoursePage() {
       credits: parseInt(data.credits)
     }),
     onSuccess: () => {
-      setTimeout(() => navigate('/dashboard'), 1500);
+      setTimeout(() => navigate('/dashboard/courses'), 1500);
     },
   });
 
@@ -174,23 +179,30 @@ export default function EditCoursePage() {
               <label className="block text-sm font-medium text-slate-300 mb-2">
                 Semester
               </label>
-              <select
-                name="semester"
-                value={formData.semester}
-                onChange={handleChange}
-                className="w-full px-4 py-3 bg-slate-700 border border-slate-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent"
-              >
-                <option value="">Select Semester</option>
-                <option value="Spring 2026">Spring 2026</option>
-                <option value="Summer 2026">Summer 2026</option>
-                <option value="Fall 2026">Fall 2026</option>
-              </select>
+              <div className="relative">
+                <select
+                  name="semester"
+                  value={formData.semester}
+                  onChange={handleChange}
+                  className="w-full px-4 pr-10 py-3 bg-slate-700 border border-slate-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent appearance-none cursor-pointer"
+                >
+                  <option value="">Select Semester</option>
+                  {semesters.map((sem) => (
+                    <option key={sem.id} value={sem.name}>{sem.name}</option>
+                  ))}
+                </select>
+                <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none">
+                  <svg className="w-5 h-5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
+                  </svg>
+                </div>
+              </div>
             </div>
 
             <div className="flex gap-4">
               <button
                 type="button"
-                onClick={() => navigate('/dashboard')}
+                onClick={() => navigate('/dashboard/courses')}
                 className="flex-1 py-3 px-4 bg-slate-700 hover:bg-slate-600 text-white font-semibold rounded-lg transition-colors"
               >
                 Cancel

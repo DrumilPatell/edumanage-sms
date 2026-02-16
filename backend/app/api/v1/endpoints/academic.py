@@ -16,7 +16,7 @@ router = APIRouter()
 @router.get("/attendance/", response_model=List[AttendanceWithDetails])
 async def get_attendance(
     skip: int = Query(0, ge=0),
-    limit: int = Query(500, ge=1, le=500),
+    limit: int = Query(100, ge=1, le=500),
     student_id: Optional[int] = None,
     course_id: Optional[int] = None,
     date_from: Optional[date] = None,
@@ -24,7 +24,20 @@ async def get_attendance(
     db: Session = Depends(get_db),
     current_user: User = Depends(require_faculty)
 ):
-    query = db.query(Attendance)
+    # Use joins for efficient querying (Student -> User for full_name)
+    query = db.query(
+        Attendance,
+        User.full_name.label('student_name'),
+        Student.student_id.label('student_code'),
+        Course.course_name.label('course_name'),
+        Course.course_code.label('course_code')
+    ).join(
+        Student, Attendance.student_id == Student.id
+    ).join(
+        User, Student.user_id == User.id
+    ).join(
+        Course, Attendance.course_id == Course.id
+    )
     
     if student_id:
         query = query.filter(Attendance.student_id == student_id)
@@ -35,14 +48,10 @@ async def get_attendance(
     if date_to:
         query = query.filter(Attendance.date <= date_to)
     
-    attendance_records = query.order_by(Attendance.date.desc()).offset(skip).limit(limit).all()
+    records = query.order_by(Attendance.date.desc()).offset(skip).limit(limit).all()
     
-    # Fetch student and course details
     result = []
-    for record in attendance_records:
-        student = db.query(Student).filter(Student.id == record.student_id).first()
-        course = db.query(Course).filter(Course.id == record.course_id).first()
-        
+    for record, student_name, student_code, course_name, course_code in records:
         record_dict = {
             "id": record.id,
             "student_id": record.student_id,
@@ -51,9 +60,10 @@ async def get_attendance(
             "status": record.status,
             "notes": record.notes,
             "created_at": record.created_at,
-            "student_name": student.full_name if student else f"Student {record.student_id}",
-            "course_name": course.course_name if course else f"Course {record.course_id}",
-            "course_code": course.course_code if course else ""
+            "student_name": student_name,
+            "student_code": student_code,
+            "course_name": course_name,
+            "course_code": course_code
         }
         result.append(AttendanceWithDetails(**record_dict))
     
@@ -85,19 +95,46 @@ async def create_attendance(
     return AttendanceResponse.model_validate(db_attendance)
 
 
-@router.get("/attendance/{attendance_id}", response_model=AttendanceResponse)
+@router.get("/attendance/{attendance_id}", response_model=AttendanceWithDetails)
 async def get_attendance_by_id(
     attendance_id: int,
     db: Session = Depends(get_db),
     current_user: User = Depends(require_faculty)
 ):
-    attendance = db.query(Attendance).filter(Attendance.id == attendance_id).first()
-    if not attendance:
+    result = db.query(
+        Attendance,
+        User.full_name.label('student_name'),
+        Student.student_id.label('student_code'),
+        Course.course_name.label('course_name'),
+        Course.course_code.label('course_code')
+    ).join(
+        Student, Attendance.student_id == Student.id
+    ).join(
+        User, Student.user_id == User.id
+    ).join(
+        Course, Attendance.course_id == Course.id
+    ).filter(Attendance.id == attendance_id).first()
+    
+    if not result:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Attendance record not found"
         )
-    return AttendanceResponse.model_validate(attendance)
+    
+    record, student_name, student_code, course_name, course_code = result
+    return AttendanceWithDetails(
+        id=record.id,
+        student_id=record.student_id,
+        course_id=record.course_id,
+        date=record.date,
+        status=record.status,
+        notes=record.notes,
+        created_at=record.created_at,
+        student_name=student_name,
+        student_code=student_code,
+        course_name=course_name,
+        course_code=course_code
+    )
 
 
 @router.patch("/attendance/{attendance_id}", response_model=AttendanceResponse)

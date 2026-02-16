@@ -17,6 +17,8 @@ const EditAttendancePage = () => {
     status: '',
     notes: ''
   });
+  const [studentCode, setStudentCode] = useState('');
+  const [courseCode, setCourseCode] = useState('');
   const [displayDate, setDisplayDate] = useState('');
 
   useEffect(() => {
@@ -38,6 +40,8 @@ const EditAttendancePage = () => {
         status: record.status,
         notes: record.notes || ''
       });
+      setStudentCode(record.student_code || `ID: ${record.student_id}`);
+      setCourseCode(record.course_code || `ID: ${record.course_id}`);
       setDisplayDate(`${day}-${month}-${year}`);
     } catch (err) {
       console.error('Failed to fetch attendance:', err);
@@ -83,7 +87,7 @@ const EditAttendancePage = () => {
       setSuccess('Attendance updated successfully!');
       
       setTimeout(() => {
-        navigate('/dashboard');
+        navigate('/dashboard/attendance');
       }, 1500);
     } catch (err) {
       setError(err.response?.data?.detail || 'Failed to update attendance');
@@ -144,7 +148,7 @@ const EditAttendancePage = () => {
                   <User className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
                   <input
                     type="text"
-                    value={formData.student_id}
+                    value={studentCode}
                     disabled
                     className="w-full pl-11 pr-4 py-3 bg-slate-700/50 border border-slate-600 rounded-lg text-slate-400 cursor-not-allowed"
                   />
@@ -153,13 +157,13 @@ const EditAttendancePage = () => {
 
               <div>
                 <label className="block text-sm font-medium text-slate-300 mb-2">
-                  Course ID
+                  Course Code
                 </label>
                 <div className="relative">
                   <BookOpen className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
                   <input
                     type="text"
-                    value={formData.course_id}
+                    value={courseCode}
                     disabled
                     className="w-full pl-11 pr-4 py-3 bg-slate-700/50 border border-slate-600 rounded-lg text-slate-400 cursor-not-allowed"
                   />
@@ -240,7 +244,7 @@ const EditAttendancePage = () => {
             <div className="flex gap-4">
               <button
                 type="button"
-                onClick={() => navigate('/dashboard')}
+                onClick={() => navigate('/dashboard/attendance')}
                 className="flex-1 py-3 px-4 bg-slate-600 hover:bg-slate-500 text-white font-semibold rounded-lg transition-colors"
               >
                 Cancel

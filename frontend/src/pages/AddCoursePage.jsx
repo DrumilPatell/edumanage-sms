@@ -1,17 +1,25 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { useMutation } from '@tanstack/react-query';
-import { coursesApi } from '../services/api';
+import { useNavigate, useLocation } from 'react-router-dom';
+import { useMutation, useQuery } from '@tanstack/react-query';
+import { coursesApi, semestersApi } from '../services/api';
 import { ArrowLeft, BookOpen, FileText, Hash, Clock } from 'lucide-react';
 
 const AddCoursePage = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+  const backPath = location.state?.from || '/dashboard';
+  const backLabel = backPath === '/dashboard/courses' ? 'Back to Courses' : 'Back to Dashboard';
   const [formData, setFormData] = useState({
     course_code: '',
     course_name: '',
     description: '',
     credits: '',
     semester: ''
+  });
+
+  const { data: semesters = [] } = useQuery({
+    queryKey: ['semesters'],
+    queryFn: semestersApi.getSemesters,
   });
 
   const mutation = useMutation({
@@ -21,7 +29,7 @@ const AddCoursePage = () => {
     }),
     onSuccess: () => {
       setTimeout(() => {
-        navigate('/dashboard');
+        navigate(backPath);
       }, 1500);
     },
   });
@@ -41,11 +49,11 @@ const AddCoursePage = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 py-8 px-4">
       <button
-        onClick={() => navigate('/dashboard')}
+        onClick={() => navigate(backPath)}
         className="fixed top-6 left-6 flex items-center gap-2 text-slate-400 hover:text-amber-400 transition-colors z-10"
       >
         <ArrowLeft className="w-5 h-5" />
-        <span>Back to Dashboard</span>
+        <span>{backLabel}</span>
       </button>
 
       <div className="max-w-2xl mx-auto">
@@ -151,17 +159,24 @@ const AddCoursePage = () => {
               <label className="block text-sm font-medium text-slate-300 mb-2">
                 Semester
               </label>
-              <select
-                name="semester"
-                value={formData.semester}
-                onChange={handleChange}
-                className="w-full px-4 py-3 bg-slate-700 border border-slate-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent"
-              >
-                <option value="">Select Semester</option>
-                <option value="Spring 2026">Spring 2026</option>
-                <option value="Summer 2026">Summer 2026</option>
-                <option value="Fall 2026">Fall 2026</option>
-              </select>
+              <div className="relative">
+                <select
+                  name="semester"
+                  value={formData.semester}
+                  onChange={handleChange}
+                  className="w-full px-4 pr-10 py-3 bg-slate-700 border border-slate-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent appearance-none cursor-pointer"
+                >
+                  <option value="">Select Semester</option>
+                  {semesters.map((sem) => (
+                    <option key={sem.id} value={sem.name}>{sem.name}</option>
+                  ))}
+                </select>
+                <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none">
+                  <svg className="w-5 h-5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
+                  </svg>
+                </div>
+              </div>
             </div>
 
             <button

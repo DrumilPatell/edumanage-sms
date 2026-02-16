@@ -3,7 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { useNavigate } from 'react-router-dom'
 import { usersApi } from '../services/api'
 import { useAuthStore } from '../store/authStore'
-import { Edit, Trash2, UserPlus } from 'lucide-react'
+import { Edit, Trash2, UserPlus, Search } from 'lucide-react'
 
 export default function UsersPage() {
   const { user } = useAuthStore()
@@ -11,10 +11,20 @@ export default function UsersPage() {
   const queryClient = useQueryClient()
   const isAdmin = user?.role === 'admin'
   const [deleteConfirm, setDeleteConfirm] = useState(null)
+  const [searchTerm, setSearchTerm] = useState('')
   
   const { data: users = [], isLoading } = useQuery({
     queryKey: ['users'],
     queryFn: () => usersApi.getUsers({ limit: 100 }),
+  })
+
+  const filteredUsers = users.filter((u) => {
+    const term = searchTerm.toLowerCase()
+    return (
+      u.full_name?.toLowerCase().includes(term) ||
+      u.email?.toLowerCase().includes(term) ||
+      u.role?.toLowerCase().includes(term)
+    )
   })
 
   const deleteMutation = useMutation({
@@ -51,13 +61,25 @@ export default function UsersPage() {
         </div>
         {isAdmin && (
           <button 
-            onClick={() => navigate('/add-user')}
+            onClick={() => navigate('/add-user', { state: { from: '/dashboard/users' } })}
             className="btn-primary flex items-center gap-2"
           >
             <UserPlus className="w-4 h-4" />
             Add User
           </button>
         )}
+      </div>
+
+      {/* Search Bar */}
+      <div className="relative">
+        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-slate-400" />
+        <input
+          type="text"
+          placeholder="Search by name, email, or role..."
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          className="w-full pl-10 pr-4 py-2 bg-slate-800 border border-slate-700 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:border-amber-500 transition-colors"
+        />
       </div>
 
       <div className="card">
@@ -78,7 +100,7 @@ export default function UsersPage() {
                 </tr>
               </thead>
               <tbody>
-                {users.map((user) => (
+                {filteredUsers.map((user) => (
                   <tr key={user.id} className="border-b border-slate-700/30 hover:bg-slate-800/50 transition-colors">
                     <td className="py-3 px-4">
                       <div className="flex items-center gap-3">
@@ -128,8 +150,10 @@ export default function UsersPage() {
                 ))}
               </tbody>
             </table>
-            {users.length === 0 && (
-              <p className="text-center py-12 text-slate-400">No users found</p>
+            {filteredUsers.length === 0 && (
+              <p className="text-center py-12 text-slate-400">
+                {searchTerm ? 'No users match your search' : 'No users found'}
+              </p>
             )}
           </div>
         )}

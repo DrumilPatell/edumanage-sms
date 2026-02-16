@@ -3,7 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { useNavigate } from 'react-router-dom'
 import { coursesApi, semestersApi } from '../services/api'
 import { useAuthStore } from '../store/authStore'
-import { Edit, Trash2, Plus, RefreshCw, Settings, X, Calendar } from 'lucide-react'
+import { Edit, Trash2, Plus, RefreshCw, Settings, X, Calendar, Search } from 'lucide-react'
 
 export default function CoursesPage() {
   const { user } = useAuthStore()
@@ -15,10 +15,21 @@ export default function CoursesPage() {
   const [showManageSemestersModal, setShowManageSemestersModal] = useState(false)
   const [selectedSemester, setSelectedSemester] = useState('')
   const [newSemesterName, setNewSemesterName] = useState('')
+  const [searchTerm, setSearchTerm] = useState('')
   
   const { data: courses = [], isLoading } = useQuery({
     queryKey: ['courses'],
     queryFn: () => coursesApi.getCourses({ limit: 100 }),
+  })
+
+  const filteredCourses = courses.filter((course) => {
+    const term = searchTerm.toLowerCase()
+    return (
+      course.course_name?.toLowerCase().includes(term) ||
+      course.course_code?.toLowerCase().includes(term) ||
+      course.semester?.toLowerCase().includes(term) ||
+      course.faculty_name?.toLowerCase().includes(term)
+    )
   })
 
   const { data: semesters = [] } = useQuery({
@@ -92,7 +103,7 @@ export default function CoursesPage() {
           )}
           {canEdit && (
             <button 
-              onClick={() => navigate('/add-course')}
+              onClick={() => navigate('/add-course', { state: { from: '/dashboard/courses' } })}
               className="btn-primary flex items-center gap-2"
             >
               <Plus className="w-4 h-4" />
@@ -102,6 +113,18 @@ export default function CoursesPage() {
         </div>
       </div>
 
+      {/* Search Bar */}
+      <div className="relative">
+        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-slate-400" />
+        <input
+          type="text"
+          placeholder="Search by course name, code, semester, or faculty..."
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          className="w-full pl-10 pr-4 py-2 bg-slate-800 border border-slate-700 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:border-amber-500 transition-colors"
+        />
+      </div>
+
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         {isLoading ? (
           <div className="col-span-full text-center py-12">
@@ -109,7 +132,7 @@ export default function CoursesPage() {
           </div>
         ) : (
           <>
-            {courses.map((course) => (
+            {filteredCourses.map((course) => (
               <div key={course.id} className="card hover:shadow-2xl hover:shadow-amber-500/10 transition-all">
                 <div className="flex items-start justify-between mb-3">
                   <div>
@@ -173,9 +196,11 @@ export default function CoursesPage() {
         )}
       </div>
 
-      {!isLoading && courses.length === 0 && (
+      {!isLoading && filteredCourses.length === 0 && (
         <div className="card text-center py-12">
-          <p className="text-slate-400">No courses found</p>
+          <p className="text-slate-400">
+            {searchTerm ? 'No courses match your search' : 'No courses found'}
+          </p>
         </div>
       )}
 
@@ -238,18 +263,25 @@ export default function CoursesPage() {
                   Manage Semesters
                 </button>
               </div>
-              <select
-                value={selectedSemester}
-                onChange={(e) => setSelectedSemester(e.target.value)}
-                className="w-full px-4 py-3 bg-slate-700 border border-slate-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent"
-              >
-                <option value="">Select a semester...</option>
-                {semesters.map((sem) => (
-                  <option key={sem.id} value={sem.name}>
-                    {sem.name} {sem.is_current && '(Current)'}
-                  </option>
-                ))}
-              </select>
+              <div className="relative">
+                <select
+                  value={selectedSemester}
+                  onChange={(e) => setSelectedSemester(e.target.value)}
+                  className="w-full px-4 pr-10 py-3 bg-slate-700 border border-slate-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent appearance-none cursor-pointer"
+                >
+                  <option value="">Select a semester...</option>
+                  {semesters.map((sem) => (
+                    <option key={sem.id} value={sem.name}>
+                      {sem.name} {sem.is_current && '(Current)'}
+                    </option>
+                  ))}
+                </select>
+                <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none">
+                  <svg className="w-5 h-5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
+                  </svg>
+                </div>
+              </div>
               {semesters.length === 0 && (
                 <p className="text-slate-500 text-sm mt-2">No semesters available. Click "Manage Semesters" to add some.</p>
               )}

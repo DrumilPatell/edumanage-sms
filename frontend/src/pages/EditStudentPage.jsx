@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { useMutation, useQuery } from '@tanstack/react-query'
-import { studentsApi } from '../services/api'
+import { studentsApi, semestersApi } from '../services/api'
 import { ArrowLeft, Save, User, Mail, Phone, Calendar, Hash, Building, GraduationCap, BookOpen, AlertCircle } from 'lucide-react'
 
 export default function EditStudentPage() {
@@ -63,6 +63,11 @@ export default function EditStudentPage() {
     queryFn: () => studentsApi.getStudent(id),
   })
 
+  const { data: semesters = [] } = useQuery({
+    queryKey: ['semesters'],
+    queryFn: semestersApi.getSemesters,
+  })
+
   useEffect(() => {
     if (student) {
       const gpaValue = student.gpa || 0
@@ -91,7 +96,7 @@ export default function EditStudentPage() {
   const mutation = useMutation({
     mutationFn: (data) => studentsApi.updateStudent(id, data),
     onSuccess: () => {
-      setTimeout(() => navigate('/dashboard'), 1500)
+      setTimeout(() => navigate('/dashboard/students'), 1500)
     },
   })
 
@@ -444,14 +449,22 @@ export default function EditStudentPage() {
                 </label>
                 <div className="relative">
                   <BookOpen className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
-                  <input
-                    type="text"
+                  <select
                     name="current_semester"
                     value={formData.current_semester}
                     onChange={handleChange}
-                    placeholder="e.g., Fall 2024, Spring 2025"
-                    className={`w-full pl-11 pr-4 py-3 bg-slate-700 border rounded-lg text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent ${errors.current_semester ? 'border-red-500' : 'border-slate-600'}`}
-                  />
+                    className={`w-full pl-11 pr-10 py-3 bg-slate-700 border rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent appearance-none cursor-pointer ${errors.current_semester ? 'border-red-500' : 'border-slate-600'}`}
+                  >
+                    <option value="">Select Semester</option>
+                    {semesters.map((sem) => (
+                      <option key={sem.id} value={sem.name}>{sem.name}</option>
+                    ))}
+                  </select>
+                  <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none">
+                    <svg className="w-5 h-5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
+                    </svg>
+                  </div>
                 </div>
                 {errors.current_semester && (
                   <p className="text-red-400 text-sm mt-1">{errors.current_semester}</p>
@@ -523,7 +536,7 @@ export default function EditStudentPage() {
             <div className="flex gap-4 pt-4">
               <button
                 type="button"
-                onClick={() => navigate('/dashboard')}
+                onClick={() => navigate('/dashboard/students')}
                 className="flex-1 px-6 py-3 bg-slate-700 hover:bg-slate-600 text-white font-medium rounded-lg transition-colors"
               >
                 Cancel

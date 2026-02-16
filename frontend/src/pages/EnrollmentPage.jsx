@@ -1,10 +1,13 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { ArrowLeft, UserPlus, BookOpen, User, Calendar } from 'lucide-react';
 import api from '../lib/api';
 
 const EnrollmentPage = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+  const backPath = location.state?.from || '/dashboard';
+  const backLabel = backPath === '/dashboard/enrollments' ? 'Back to Enrollments' : 'Back to Dashboard';
   const [students, setStudents] = useState([]);
   const [courses, setCourses] = useState([]);
   const [formData, setFormData] = useState({
@@ -99,7 +102,7 @@ const EnrollmentPage = () => {
       });
       
       setTimeout(() => {
-        navigate('/dashboard');
+        navigate(backPath);
       }, 2000);
     } catch (err) {
       setError(err.response?.data?.detail || 'Failed to enroll student');
@@ -111,11 +114,11 @@ const EnrollmentPage = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 py-8 px-4">
       <button
-        onClick={() => navigate('/dashboard')}
+        onClick={() => navigate(backPath)}
         className="fixed top-6 left-6 flex items-center gap-2 text-slate-400 hover:text-amber-400 transition-colors z-10"
       >
         <ArrowLeft className="w-5 h-5" />
-        <span>Back to Dashboard</span>
+        <span>{backLabel}</span>
       </button>
 
       <div className="max-w-2xl mx-auto">
@@ -154,7 +157,7 @@ const EnrollmentPage = () => {
                   value={formData.student_id}
                   onChange={handleChange}
                   required
-                  className="w-full pl-11 pr-4 py-3 bg-slate-700 border border-slate-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent appearance-none cursor-pointer"
+                  className="w-full pl-11 pr-10 py-3 bg-slate-700 border border-slate-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent appearance-none cursor-pointer"
                 >
                   <option value="">Choose a student</option>
                   {students.map((student) => (
@@ -163,6 +166,11 @@ const EnrollmentPage = () => {
                     </option>
                   ))}
                 </select>
+                <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none">
+                  <svg className="w-5 h-5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
+                  </svg>
+                </div>
               </div>
             </div>
 
@@ -177,7 +185,7 @@ const EnrollmentPage = () => {
                   value={formData.course_id}
                   onChange={handleChange}
                   required
-                  className="w-full pl-11 pr-4 py-3 bg-slate-700 border border-slate-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent appearance-none cursor-pointer"
+                  className="w-full pl-11 pr-10 py-3 bg-slate-700 border border-slate-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent appearance-none cursor-pointer"
                 >
                   <option value="">Choose a course</option>
                   {courses.map((course) => (
@@ -186,6 +194,11 @@ const EnrollmentPage = () => {
                     </option>
                   ))}
                 </select>
+                <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none">
+                  <svg className="w-5 h-5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
+                  </svg>
+                </div>
               </div>
             </div>
 

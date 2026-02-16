@@ -1,11 +1,14 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { useMutation } from '@tanstack/react-query';
-import { studentsApi } from '../services/api';
-import { ArrowLeft, User, Mail, Phone, Calendar, Hash, Building, GraduationCap, BookOpen, AlertCircle } from 'lucide-react';
+import { useNavigate, useLocation } from 'react-router-dom';
+import { useMutation, useQuery } from '@tanstack/react-query';
+import { studentsApi, semestersApi } from '../services/api';
+import { ArrowLeft, User, Mail, Phone, Calendar, Hash, Building, GraduationCap, BookOpen, AlertCircle, Lock } from 'lucide-react';
 
 const AddStudentPage = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+  const backPath = location.state?.from || '/dashboard';
+  const backLabel = backPath === '/dashboard/students' ? 'Back to Students' : 'Back to Dashboard';
   const [formData, setFormData] = useState({
     student_id: '',
     full_name: '',
@@ -38,6 +41,11 @@ const AddStudentPage = () => {
     const [year, month, day] = isoDate.split('-');
     return `${day}-${month}-${year}`;
   };
+
+  const { data: semesters = [] } = useQuery({
+    queryKey: ['semesters'],
+    queryFn: semestersApi.getSemesters,
+  });
 
   const formatDateToISO = (displayDate) => {
     if (!displayDate || displayDate.length !== 10) return '';
@@ -100,7 +108,7 @@ const AddStudentPage = () => {
       setDisplayDOB('');
       setErrors({});
       setTimeout(() => {
-        navigate('/dashboard');
+        navigate(backPath);
       }, 1500);
     },
     onError: (error) => {
@@ -195,11 +203,11 @@ const AddStudentPage = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 py-8 px-4">
       <button
-        onClick={() => navigate('/dashboard')}
+        onClick={() => navigate(backPath)}
         className="fixed top-6 left-6 flex items-center gap-2 text-slate-400 hover:text-amber-400 transition-colors z-10"
       >
         <ArrowLeft className="w-5 h-5" />
-        <span>Back to Dashboard</span>
+        <span>{backLabel}</span>
       </button>
 
       <div className="max-w-4xl mx-auto">
@@ -450,14 +458,22 @@ const AddStudentPage = () => {
                 </label>
                 <div className="relative">
                   <BookOpen className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
-                  <input
-                    type="text"
+                  <select
                     name="current_semester"
                     value={formData.current_semester}
                     onChange={handleChange}
-                    placeholder="e.g., Fall 2024, Spring 2025"
-                    className={`w-full pl-11 pr-4 py-3 bg-slate-700 border rounded-lg text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent ${errors.current_semester ? 'border-red-500' : 'border-slate-600'}`}
-                  />
+                    className={`w-full pl-11 pr-10 py-3 bg-slate-700 border rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent appearance-none cursor-pointer ${errors.current_semester ? 'border-red-500' : 'border-slate-600'}`}
+                  >
+                    <option value="">Select Semester</option>
+                    {semesters.map((sem) => (
+                      <option key={sem.id} value={sem.name}>{sem.name}</option>
+                    ))}
+                  </select>
+                  <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none">
+                    <svg className="w-5 h-5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
+                    </svg>
+                  </div>
                 </div>
                 {errors.current_semester && (
                   <p className="text-red-400 text-sm mt-1">{errors.current_semester}</p>
@@ -507,18 +523,21 @@ const AddStudentPage = () => {
                   <p className="text-red-400 text-sm mt-1">{errors.gpa}</p>
                 )}
               </div>
+            </div>
 
-              <div>
-                <label className="block text-sm font-medium text-slate-300 mb-2">
-                  Password (Optional)
-                </label>
+            <div>
+              <label className="block text-sm font-medium text-slate-300 mb-2">
+                Password (Optional)
+              </label>
+              <div className="relative">
+                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
                 <input
                   type="password"
                   name="password"
                   value={formData.password}
                   onChange={handleChange}
                   placeholder="Default: Student@123"
-                  className="w-full px-4 py-3 bg-slate-700 border border-slate-600 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent"
+                  className="w-full pl-11 pr-4 py-3 bg-slate-700 border border-slate-600 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent"
                 />
               </div>
             </div>
@@ -543,7 +562,7 @@ const AddStudentPage = () => {
             <div className="flex gap-3">
               <button
                 type="button"
-                onClick={() => navigate('/dashboard')}
+                onClick={() => navigate(backPath)}
                 className="flex-1 px-6 py-3 bg-slate-700 hover:bg-slate-600 text-white font-medium rounded-lg transition-colors"
               >
                 Cancel
