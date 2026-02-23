@@ -13,6 +13,26 @@ from app.auth.dependencies import get_current_user, require_faculty
 router = APIRouter()
 
 
+def calculate_letter_grade(percentage: float) -> str:
+    """Calculate letter grade based on percentage"""
+    if percentage >= 90:
+        return 'A+'
+    elif percentage >= 80:
+        return 'A'
+    elif percentage >= 75:
+        return 'B+'
+    elif percentage >= 70:
+        return 'B'
+    elif percentage >= 65:
+        return 'C+'
+    elif percentage >= 60:
+        return 'C'
+    elif percentage >= 50:
+        return 'D'
+    else:
+        return 'F'
+
+
 @router.get("/attendance/", response_model=List[AttendanceWithDetails])
 async def get_attendance(
     skip: int = Query(0, ge=0),
@@ -270,6 +290,11 @@ async def create_grade(
     if grade.max_score > 0:
         percentage_value = (grade.score / grade.max_score) * 100
         setattr(db_grade, 'percentage', percentage_value)
+        
+        # Auto-calculate letter grade if not provided
+        if not grade.letter_grade:
+            letter_grade = calculate_letter_grade(percentage_value)
+            setattr(db_grade, 'letter_grade', letter_grade)
     
     db.add(db_grade)
     db.commit()
@@ -348,6 +373,11 @@ async def update_grade(
             score_val = getattr(grade, 'score', 0)
             percentage_value = (score_val / max_score_val) * 100
             setattr(grade, 'percentage', percentage_value)
+            
+            # Auto-calculate letter grade if not provided
+            if not getattr(grade, 'letter_grade', None):
+                letter_grade = calculate_letter_grade(percentage_value)
+                setattr(grade, 'letter_grade', letter_grade)
     
     db.commit()
     db.refresh(grade)
@@ -378,6 +408,11 @@ async def update_grade_full(
             score_val = getattr(grade, 'score', 0)
             percentage_value = (score_val / max_score_val) * 100
             setattr(grade, 'percentage', percentage_value)
+            
+            # Auto-calculate letter grade if not provided
+            if not getattr(grade, 'letter_grade', None):
+                letter_grade = calculate_letter_grade(percentage_value)
+                setattr(grade, 'letter_grade', letter_grade)
     
     db.commit()
     db.refresh(grade)

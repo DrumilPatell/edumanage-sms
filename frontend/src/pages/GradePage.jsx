@@ -117,6 +117,14 @@ const GradePage = () => {
     if (name === 'score' || name === 'max_score') {
       const score = name === 'score' ? parseFloat(value) : parseFloat(formData.score);
       const maxScore = name === 'max_score' ? parseFloat(value) : parseFloat(formData.max_score);
+      
+      // Validate score doesn't exceed max score
+      if (score > maxScore && maxScore > 0) {
+        setError('Score cannot be greater than maximum score');
+      } else {
+        setError('');
+      }
+      
       if (score && maxScore && maxScore > 0) {
         const percentage = (score / maxScore) * 100;
         let letterGrade = '';
@@ -135,6 +143,15 @@ const GradePage = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    
+    // Validate score doesn't exceed max score
+    const score = parseFloat(formData.score);
+    const maxScore = parseFloat(formData.max_score);
+    if (score > maxScore) {
+      setError('Score cannot be greater than maximum score');
+      return;
+    }
+    
     setSubmitting(true);
     setError('');
     setSuccess('');
