@@ -1,8 +1,9 @@
 import { useQuery } from '@tanstack/react-query'
 import { useNavigate } from 'react-router-dom'
-import { coursesApi, studentsApi } from '../../services/api'
+import { coursesApi, studentsApi, enrollmentsApi, academicApi } from '../../services/api'
 import { useAuthStore } from '../../store/authStore'
 import { BookOpen, Users, Award, UserCheck, PlusCircle, ClipboardCheck } from 'lucide-react'
+import { useMemo } from 'react'
 
 export default function FacultyDashboard() {
   const { user } = useAuthStore()
@@ -17,6 +18,32 @@ export default function FacultyDashboard() {
     queryKey: ['students'],
     queryFn: () => studentsApi.getStudents({ limit: 100 }),
   })
+
+  const { data: enrollments = [] } = useQuery({
+    queryKey: ['enrollments'],
+    queryFn: () => enrollmentsApi.getEnrollments({ limit: 1000 }),
+  })
+
+  const { data: grades = [] } = useQuery({
+    queryKey: ['grades'],
+    queryFn: () => academicApi.getGrades({ limit: 1000 }),
+  })
+
+  // Calculate pending grades: enrolled students in faculty's courses minus those already graded
+  const pendingGrades = useMemo(() => {
+    const myCourseIds = new Set(myCourses.map(c => c.id))
+    // Count enrollments in faculty's courses
+    const myEnrollments = enrollments.filter(e => myCourseIds.has(e.course_id))
+    // Count unique student-course pairs that already have grades
+    const gradedPairs = new Set(
+      grades
+        .filter(g => myCourseIds.has(g.course_id))
+        .map(g => `${g.student_id}-${g.course_id}`)
+    )
+    // Pending = enrollments without any grade
+    const pending = myEnrollments.filter(e => !gradedPairs.has(`${e.student_id}-${e.course_id}`))
+    return pending.length
+  }, [myCourses, enrollments, grades])
 
   const stats = [
     {
@@ -37,7 +64,7 @@ export default function FacultyDashboard() {
     },
     {
       name: 'Pending Grades',
-      value: 0,
+      value: pendingGrades,
       icon: Award,
       bgColor: 'bg-amber-500/10',
       textColor: 'text-amber-400',

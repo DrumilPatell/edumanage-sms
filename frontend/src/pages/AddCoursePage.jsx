@@ -1,12 +1,15 @@
 import { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useMutation, useQuery } from '@tanstack/react-query';
-import { coursesApi, semestersApi } from '../services/api';
-import { ArrowLeft, BookOpen, FileText, Hash, Clock } from 'lucide-react';
+import { coursesApi, semestersApi, usersApi } from '../services/api';
+import { useAuthStore } from '../store/authStore';
+import { ArrowLeft, BookOpen, FileText, Hash, Clock, User } from 'lucide-react';
 
 const AddCoursePage = () => {
   const navigate = useNavigate();
   const location = useLocation();
+  const { user } = useAuthStore();
+  const isAdmin = user?.role === 'admin';
   const backPath = location.state?.from || '/dashboard';
   const backLabel = backPath === '/dashboard/courses' ? 'Back to Courses' : 'Back to Dashboard';
   const [formData, setFormData] = useState({
@@ -14,7 +17,8 @@ const AddCoursePage = () => {
     course_name: '',
     description: '',
     credits: '',
-    semester: ''
+    semester: '',
+    faculty_id: ''
   });
 
   const { data: semesters = [] } = useQuery({
@@ -22,10 +26,19 @@ const AddCoursePage = () => {
     queryFn: semestersApi.getSemesters,
   });
 
+  const { data: allUsers = [] } = useQuery({
+    queryKey: ['users'],
+    queryFn: () => usersApi.getUsers({ limit: 500 }),
+  });
+
+  // Filter to get only faculty users
+  const facultyUsers = allUsers.filter(user => user.role === 'faculty');
+
   const mutation = useMutation({
     mutationFn: (data) => coursesApi.createCourse({
       ...data,
-      credits: parseInt(data.credits)
+      credits: parseInt(data.credits),
+      faculty_id: data.faculty_id ? parseInt(data.faculty_id) : null
     }),
     onSuccess: () => {
       setTimeout(() => {
@@ -178,6 +191,34 @@ const AddCoursePage = () => {
                 </div>
               </div>
             </div>
+
+            {isAdmin && (
+              <div>
+                <label className="block text-sm font-medium text-slate-300 mb-2">
+                  Assign Faculty <span className="text-red-400">*</span>
+                </label>
+                <div className="relative">
+                  <User className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
+                  <select
+                    name="faculty_id"
+                    value={formData.faculty_id}
+                    onChange={handleChange}
+                    required
+                    className="w-full pl-11 pr-10 py-3 bg-slate-700 border border-slate-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent appearance-none cursor-pointer"
+                  >
+                    <option value="">Select Faculty</option>
+                    {facultyUsers.map((faculty) => (
+                      <option key={faculty.id} value={faculty.id}>{faculty.full_name} ({faculty.email})</option>
+                    ))}
+                  </select>
+                  <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none">
+                    <svg className="w-5 h-5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
+                    </svg>
+                  </div>
+                </div>
+              </div>
+            )}
 
             <button
               type="submit"

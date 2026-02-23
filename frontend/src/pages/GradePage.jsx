@@ -1,11 +1,13 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
+import { useQueryClient } from '@tanstack/react-query';
 import { ArrowLeft, Award, BookOpen, User, Hash, FileText, Calendar } from 'lucide-react';
 import api from '../lib/api';
 
 const GradePage = () => {
   const navigate = useNavigate();
   const location = useLocation();
+  const queryClient = useQueryClient();
   const backPath = location.state?.from || '/dashboard';
   const backLabel = backPath === '/dashboard/grades' ? 'Back to Grades' : 'Back to Dashboard';
   const [allCourses, setAllCourses] = useState([]);
@@ -170,6 +172,10 @@ const GradePage = () => {
       });
 
       setSuccess('Grade added successfully!');
+      
+      // Invalidate queries to refresh the data
+      queryClient.invalidateQueries({ queryKey: ['grades'] });
+      
       const today = new Date().toISOString().split('T')[0];
       const [year, month, day] = today.split('-');
       setDisplayDate(`${day}-${month}-${year}`);

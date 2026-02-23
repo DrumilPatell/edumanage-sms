@@ -1,18 +1,22 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useMutation, useQuery } from '@tanstack/react-query';
-import { coursesApi, semestersApi } from '../services/api';
-import { ArrowLeft, BookOpen, FileText, Hash, Clock, Save } from 'lucide-react';
+import { coursesApi, semestersApi, usersApi } from '../services/api';
+import { useAuthStore } from '../store/authStore';
+import { ArrowLeft, BookOpen, FileText, Hash, Clock, Save, User } from 'lucide-react';
 
 export default function EditCoursePage() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { user } = useAuthStore();
+  const isAdmin = user?.role === 'admin';
   const [formData, setFormData] = useState({
     course_code: '',
     course_name: '',
     description: '',
     credits: '',
-    semester: ''
+    semester: '',
+    faculty_id: ''
   });
 
   const { data: course, isLoading } = useQuery({
@@ -25,6 +29,14 @@ export default function EditCoursePage() {
     queryFn: semestersApi.getSemesters,
   });
 
+  const { data: allUsers = [] } = useQuery({
+    queryKey: ['users'],
+    queryFn: () => usersApi.getUsers({ limit: 500 }),
+  });
+
+  // Filter to get only faculty users
+  const facultyUsers = allUsers.filter(user => user.role === 'faculty');
+
   useEffect(() => {
     if (course) {
       setFormData({
@@ -32,7 +44,8 @@ export default function EditCoursePage() {
         course_name: course.course_name || '',
         description: course.description || '',
         credits: course.credits || '',
-        semester: course.semester || ''
+        semester: course.semester || '',
+        faculty_id: course.faculty_id?.toString() || ''
       });
     }
   }, [course]);
@@ -40,7 +53,8 @@ export default function EditCoursePage() {
   const mutation = useMutation({
     mutationFn: (data) => coursesApi.updateCourse(id, {
       ...data,
-      credits: parseInt(data.credits)
+      credits: parseInt(data.credits),
+      faculty_id: data.faculty_id ? parseInt(data.faculty_id) : null
     }),
     onSuccess: () => {
       setTimeout(() => navigate('/dashboard/courses'), 1500);
@@ -198,6 +212,34 @@ export default function EditCoursePage() {
                 </div>
               </div>
             </div>
+
+            {isAdmin && (
+              <div>
+                <label className="block text-sm font-medium text-slate-300 mb-2">
+                  Assign Faculty <span className="text-red-400">*</span>
+                </label>
+                <div className="relative">
+                  <User className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
+                  <select
+                    name="faculty_id"
+                    value={formData.faculty_id}
+                    onChange={handleChange}
+                    required
+                    className="w-full pl-11 pr-10 py-3 bg-slate-700 border border-slate-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent appearance-none cursor-pointer"
+                  >
+                    <option value="">Select Faculty</option>
+                    {facultyUsers.map((faculty) => (
+                      <option key={faculty.id} value={faculty.id}>{faculty.full_name} ({faculty.email})</option>
+                    ))}
+                  </select>
+                  <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none">
+                    <svg className="w-5 h-5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
+                    </svg>
+                  </div>
+                </div>
+              </div>
+            )}
 
             <div className="flex gap-4">
               <button

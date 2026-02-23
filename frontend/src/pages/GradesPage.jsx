@@ -51,7 +51,8 @@ export default function GradesPage() {
         record.course_name?.toLowerCase().includes(term) ||
         record.course_code?.toLowerCase().includes(term) ||
         record.assessment_name?.toLowerCase().includes(term) ||
-        record.letter_grade?.toLowerCase().includes(term)
+        record.letter_grade?.toLowerCase().includes(term) ||
+        record.remarks?.toLowerCase().includes(term)
       )
     })
   }, [grades, typeFilter, searchTerm])
@@ -286,6 +287,7 @@ export default function GradesPage() {
                   <th className="text-left py-3 px-4 font-semibold text-slate-300">Type</th>
                   <th className="text-left py-3 px-4 font-semibold text-slate-300">Score</th>
                   <th className="text-left py-3 px-4 font-semibold text-slate-300">Grade</th>
+                  <th className="text-left py-3 px-4 font-semibold text-slate-300">Remarks</th>
                   {canEdit && (
                     <th className="text-left py-3 px-4 font-semibold text-slate-300">Actions</th>
                   )}
@@ -324,6 +326,13 @@ export default function GradesPage() {
                         <span className={`badge ${getGradeBadge(record.letter_grade)}`}>
                           {record.letter_grade}
                         </span>
+                      ) : (
+                        <span className="text-slate-500">-</span>
+                      )}
+                    </td>
+                    <td className="py-3 px-4">
+                      {record.remarks ? (
+                        <p className="text-slate-300 text-sm max-w-[200px] truncate" title={record.remarks}>{record.remarks}</p>
                       ) : (
                         <span className="text-slate-500">-</span>
                       )}

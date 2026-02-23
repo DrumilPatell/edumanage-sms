@@ -99,7 +99,14 @@ export default function AdminDashboard() {
             <span className="text-sm text-slate-400 bg-slate-700/50 px-2 py-1 rounded-lg">Total: {students.length}</span>
           </div>
           <div className="space-y-3 max-h-80 overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-slate-600 scrollbar-track-slate-800">
-            {students.map((student) => (
+            {students
+              .sort((a, b) => {
+                // Sort by student_id in ascending order
+                if (!a.student_id) return 1
+                if (!b.student_id) return -1
+                return a.student_id.localeCompare(b.student_id)
+              })
+              .map((student) => (
               <div key={student.id} className="flex items-center gap-3 p-3 bg-slate-800/50 border border-slate-700/50 rounded-lg hover:bg-slate-700/50 transition-colors">
                 <div className="w-10 h-10 rounded-full bg-gradient-to-br from-amber-400 to-amber-600 flex items-center justify-center shadow-lg shadow-amber-500/30">
                   <span className="text-sm font-semibold text-white">

@@ -23,15 +23,22 @@ export default function StudentsPage() {
     queryFn: () => studentsApi.getStudents({ limit: 100 }),
   })
 
-  const filteredStudents = students.filter((student) => {
-    const term = searchTerm.toLowerCase()
-    return (
-      student.full_name?.toLowerCase().includes(term) ||
-      student.student_id?.toLowerCase().includes(term) ||
-      student.email?.toLowerCase().includes(term) ||
-      student.program?.toLowerCase().includes(term)
-    )
-  })
+  const filteredStudents = students
+    .filter((student) => {
+      const term = searchTerm.toLowerCase()
+      return (
+        student.full_name?.toLowerCase().includes(term) ||
+        student.student_id?.toLowerCase().includes(term) ||
+        student.email?.toLowerCase().includes(term) ||
+        student.program?.toLowerCase().includes(term)
+      )
+    })
+    .sort((a, b) => {
+      // Sort by student_id in ascending order
+      if (!a.student_id) return 1
+      if (!b.student_id) return -1
+      return a.student_id.localeCompare(b.student_id)
+    })
 
   const { data: semesters = [] } = useQuery({
     queryKey: ['semesters'],

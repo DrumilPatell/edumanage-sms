@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useParams, useLocation } from 'react-router-dom';
+import { useQueryClient } from '@tanstack/react-query';
 import { ArrowLeft, Award, BookOpen, User, Hash, FileText, Calendar } from 'lucide-react';
 import api from '../lib/api';
 
@@ -7,6 +8,7 @@ const EditGradePage = () => {
   const navigate = useNavigate();
   const { id } = useParams();
   const location = useLocation();
+  const queryClient = useQueryClient();
   const backPath = location.state?.from || '/dashboard/grades';
   const [courses, setCourses] = useState([]);
   const [students, setStudents] = useState([]);
@@ -152,6 +154,9 @@ const EditGradePage = () => {
       });
 
       setSuccess('Grade updated successfully!');
+      
+      // Invalidate queries to refresh the data
+      queryClient.invalidateQueries({ queryKey: ['grades'] });
       
       setTimeout(() => {
         navigate(backPath);
