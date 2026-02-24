@@ -10,14 +10,20 @@ const GradePage = () => {
   const queryClient = useQueryClient();
   const backPath = location.state?.from || '/dashboard';
   const backLabel = backPath === '/dashboard/grades' ? 'Back to Grades' : 'Back to Dashboard';
+  
+  // Get pre-filled values from navigation state (from pending grades section)
+  const prefilledStudentId = location.state?.studentId || '';
+  const prefilledCourseId = location.state?.courseId || '';
+  
   const [allCourses, setAllCourses] = useState([]);
   const [enrolledCourses, setEnrolledCourses] = useState([]);
+  const [enrollmentData, setEnrollmentData] = useState([]); // Store enrollment info including dates
   const [students, setStudents] = useState([]);
   const [loading, setLoading] = useState(true);
   const [loadingCourses, setLoadingCourses] = useState(false);
   const [formData, setFormData] = useState({
-    student_id: '',
-    course_id: '',
+    student_id: prefilledStudentId ? String(prefilledStudentId) : '',
+    course_id: prefilledCourseId ? String(prefilledCourseId) : '',
     assessment_type: '',
     assessment_name: '',
     score: '',
@@ -39,6 +45,13 @@ const GradePage = () => {
     setDisplayDate(`${day}-${month}-${year}`);
   }, []);
 
+  // Fetch enrolled courses when student is pre-filled
+  useEffect(() => {
+    if (prefilledStudentId && allCourses.length > 0) {
+      fetchEnrolledCourses(prefilledStudentId);
+    }
+  }, [prefilledStudentId, allCourses]);
+
   const fetchData = async () => {
     try {
       const [coursesRes, studentsRes] = await Promise.all([
@@ -57,11 +70,14 @@ const GradePage = () => {
   const fetchEnrolledCourses = async (studentId) => {
     if (!studentId) {
       setEnrolledCourses([]);
+      setEnrollmentData([]);
       return;
     }
     setLoadingCourses(true);
     try {
       const res = await api.get(`/enrollments/student/${studentId}/courses`);
+      // Store full enrollment data including dates
+      setEnrollmentData(res.data);
       // Extract course info from enrollments
       const courseIds = res.data.map(enrollment => enrollment.course_id);
       const filtered = allCourses.filter(course => courseIds.includes(course.id));
@@ -69,6 +85,7 @@ const GradePage = () => {
     } catch (err) {
       console.error('Failed to fetch enrolled courses:', err);
       setEnrolledCourses([]);
+      setEnrollmentData([]);
     } finally {
       setLoadingCourses(false);
     }
@@ -79,8 +96,26 @@ const GradePage = () => {
     setDisplayDate(value);
     if (value.length === 10) {
       const [day, month, year] = value.split('-');
-      setFormData(prev => ({ ...prev, date_assessed: `${year}-${month}-${day}` }));
+      const isoDate = `${year}-${month}-${day}`;
+      setFormData(prev => ({ ...prev, date_assessed: isoDate }));
     }
+  };
+
+  // Get enrollment date for currently selected student-course pair
+  const getEnrollmentDate = () => {
+    if (!formData.student_id || !formData.course_id || enrollmentData.length === 0) {
+      return '';
+    }
+    const enrollment = enrollmentData.find(
+      e => e.course_id === Number(formData.course_id)
+    );
+    if (enrollment && enrollment.enrollment_date) {
+      // Extract only the date part (before 'T' if datetime string)
+      const dateOnly = enrollment.enrollment_date.split('T')[0];
+      const [year, month, day] = dateOnly.split('-');
+      return `${day}-${month}-${year}`;
+    }
+    return '';
   };
 
   const handleChange = (e) => {
@@ -94,6 +129,13 @@ const GradePage = () => {
         course_id: ''
       }));
       fetchEnrolledCourses(value);
+      setError('');
+      return;
+    }
+
+    // If course changes, update form data
+    if (name === 'course_id') {
+      setFormData(prev => ({ ...prev, course_id: value }));
       setError('');
       return;
     }
@@ -311,6 +353,23 @@ const GradePage = () => {
                 <p className="mt-2 text-sm text-amber-400">This student is not enrolled in any courses.</p>
               )}
             </div>
+
+            {getEnrollmentDate() && (
+              <div>
+                <label className="block text-sm font-medium text-slate-300 mb-2">
+                  Enrollment Date
+                </label>
+                <div className="relative">
+                  <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
+                  <input
+                    type="text"
+                    value={getEnrollmentDate()}
+                    readOnly
+                    className="w-full pl-11 pr-4 py-3 bg-slate-700/50 border border-slate-600 rounded-lg text-slate-300 cursor-not-allowed"
+                  />
+                </div>
+              </div>
+            )}
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>

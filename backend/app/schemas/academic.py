@@ -50,13 +50,18 @@ class GradeBase(BaseModel):
 
 
 class GradeCreate(GradeBase):
-    pass
+    letter_grade: Optional[str] = None
 
 
 class GradeUpdate(BaseModel):
+    student_id: Optional[int] = None
+    course_id: Optional[int] = None
+    assessment_type: Optional[str] = None
+    assessment_name: Optional[str] = None
     score: Optional[float] = None
     max_score: Optional[float] = None
     letter_grade: Optional[str] = None
+    date_assessed: Optional[DateType] = None
     remarks: Optional[str] = None
 
 

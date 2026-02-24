@@ -10,9 +10,12 @@ const EditGradePage = () => {
   const location = useLocation();
   const queryClient = useQueryClient();
   const backPath = location.state?.from || '/dashboard/grades';
-  const [courses, setCourses] = useState([]);
+  const [allCourses, setAllCourses] = useState([]);
+  const [enrolledCourses, setEnrolledCourses] = useState([]);
   const [students, setStudents] = useState([]);
+  const [enrollmentData, setEnrollmentData] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [loadingCourses, setLoadingCourses] = useState(false);
   const [formData, setFormData] = useState({
     student_id: '',
     course_id: '',
@@ -35,15 +38,27 @@ const EditGradePage = () => {
 
   const fetchData = async () => {
     try {
-      const [coursesRes, studentsRes, gradeRes] = await Promise.all([
+      const [coursesRes, studentsRes, gradeRes, enrollmentsRes] = await Promise.all([
         api.get('/courses/'),
         api.get('/students/'),
-        api.get(`/academic/grades/${id}`)
+        api.get(`/academic/grades/${id}`),
+        api.get('/enrollments/?limit=1000')
       ]);
-      setCourses(coursesRes.data);
+      setAllCourses(coursesRes.data);
       setStudents(studentsRes.data);
+      setEnrollmentData(enrollmentsRes.data);
       
       const grade = gradeRes.data;
+      const studentId = grade.student_id?.toString() || '';
+      
+      // Filter enrolled courses for this student
+      const studentEnrollments = enrollmentsRes.data.filter(
+        e => e.student_id === grade.student_id
+      );
+      const courseIds = studentEnrollments.map(e => e.course_id);
+      const filtered = coursesRes.data.filter(course => courseIds.includes(course.id));
+      setEnrolledCourses(filtered);
+      
       const dateStr = grade.date_assessed || '';
       setFormData({
         student_id: grade.student_id?.toString() || '',
@@ -70,6 +85,18 @@ const EditGradePage = () => {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
+    
+    // If student changes, fetch their enrolled courses and reset course selection
+    if (name === 'student_id') {
+      setFormData(prev => ({
+        ...prev,
+        student_id: value,
+        course_id: ''
+      }));
+      fetchEnrolledCourses(value);
+      setError('');
+      return;
+    }
     
     // Handle date change from date picker
     if (name === 'date_assessed') {
@@ -116,13 +143,46 @@ const EditGradePage = () => {
     }
   };
 
+  const fetchEnrolledCourses = (studentId) => {
+    if (!studentId) {
+      setEnrolledCourses([]);
+      return;
+    }
+    setLoadingCourses(true);
+    const studentEnrollments = enrollmentData.filter(
+      e => e.student_id === parseInt(studentId)
+    );
+    const courseIds = studentEnrollments.map(e => e.course_id);
+    const filtered = allCourses.filter(course => courseIds.includes(course.id));
+    setEnrolledCourses(filtered);
+    setLoadingCourses(false);
+  };
+
   const handleDisplayDateChange = (e) => {
     const value = e.target.value;
     setDisplayDate(value);
     if (value.length === 10) {
       const [day, month, year] = value.split('-');
-      setFormData(prev => ({ ...prev, date_assessed: `${year}-${month}-${day}` }));
+      const isoDate = `${year}-${month}-${day}`;
+      setFormData(prev => ({ ...prev, date_assessed: isoDate }));
     }
+  };
+
+  // Get enrollment date for currently selected student-course pair
+  const getEnrollmentDate = () => {
+    if (!formData.student_id || !formData.course_id || enrollmentData.length === 0) {
+      return '';
+    }
+    const enrollment = enrollmentData.find(
+      e => e.student_id === parseInt(formData.student_id) && e.course_id === parseInt(formData.course_id)
+    );
+    if (enrollment && enrollment.enrollment_date) {
+      // Extract only the date part (before 'T' if datetime string)
+      const dateOnly = enrollment.enrollment_date.split('T')[0];
+      const [year, month, day] = dateOnly.split('-');
+      return `${day}-${month}-${year}`;
+    }
+    return '';
   };
 
   const handleSubmit = async (e) => {
@@ -250,10 +310,19 @@ const EditGradePage = () => {
                   value={formData.course_id}
                   onChange={handleChange}
                   required
-                  className="w-full pl-11 pr-10 py-3 bg-slate-700 border border-slate-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent appearance-none cursor-pointer"
+                  disabled={!formData.student_id || loadingCourses}
+                  className="w-full pl-11 pr-10 py-3 bg-slate-700 border border-slate-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent appearance-none cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  <option value="">Choose a course</option>
-                  {courses.map((course) => (
+                  <option value="">
+                    {!formData.student_id 
+                      ? 'Select a student first' 
+                      : loadingCourses 
+                        ? 'Loading courses...' 
+                        : enrolledCourses.length === 0 
+                          ? 'No enrolled courses found' 
+                          : 'Choose a course'}
+                  </option>
+                  {enrolledCourses.map((course) => (
                     <option key={course.id} value={course.id}>
                       {course.course_code} - {course.course_name}
                     </option>
@@ -266,6 +335,23 @@ const EditGradePage = () => {
                 </div>
               </div>
             </div>
+
+            {getEnrollmentDate() && (
+              <div>
+                <label className="block text-sm font-medium text-slate-300 mb-2">
+                  Enrollment Date
+                </label>
+                <div className="relative">
+                  <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
+                  <input
+                    type="text"
+                    value={getEnrollmentDate()}
+                    readOnly
+                    className="w-full pl-11 pr-4 py-3 bg-slate-700/50 border border-slate-600 rounded-lg text-slate-300 cursor-not-allowed"
+                  />
+                </div>
+              </div>
+            )}
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>

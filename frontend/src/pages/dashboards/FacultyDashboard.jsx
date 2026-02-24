@@ -26,23 +26,46 @@ export default function FacultyDashboard() {
 
   const { data: grades = [] } = useQuery({
     queryKey: ['grades'],
-    queryFn: () => academicApi.getGrades({ limit: 1000 }),
+    queryFn: () => academicApi.getGrades({ limit: 500 }),
   })
 
   // Calculate pending grades: enrolled students in faculty's courses minus those already graded
-  const pendingGrades = useMemo(() => {
-    const myCourseIds = new Set(myCourses.map(c => c.id))
-    // Count enrollments in faculty's courses
-    const myEnrollments = enrollments.filter(e => myCourseIds.has(e.course_id))
-    // Count unique student-course pairs that already have grades
+  const { pendingGrades, pendingList } = useMemo(() => {
+    if (!myCourses.length || !enrollments.length) return { pendingGrades: 0, pendingList: [] }
+    
+    // Get all course IDs for this faculty
+    const myCourseIds = new Set(myCourses.map(c => Number(c.id)))
+    
+    // Create map of courses for quick lookup
+    const courseMap = new Map(myCourses.map(c => [Number(c.id), c]))
+    
+    // Get enrollments in faculty's courses
+    const myEnrollments = enrollments.filter(e => myCourseIds.has(Number(e.course_id)))
+    
+    // If no grades exist yet, all enrollments are pending
+    if (!grades.length) {
+      const list = myEnrollments.map(e => ({
+        ...e,
+        course: courseMap.get(Number(e.course_id))
+      }))
+      return { pendingGrades: list.length, pendingList: list }
+    }
+    
+    // Create set of graded student-course pairs
     const gradedPairs = new Set(
       grades
-        .filter(g => myCourseIds.has(g.course_id))
+        .filter(g => myCourseIds.has(Number(g.course_id)))
         .map(g => `${g.student_id}-${g.course_id}`)
     )
+    
     // Pending = enrollments without any grade
     const pending = myEnrollments.filter(e => !gradedPairs.has(`${e.student_id}-${e.course_id}`))
-    return pending.length
+    const list = pending.map(e => ({
+      ...e,
+      course: courseMap.get(Number(e.course_id))
+    }))
+    
+    return { pendingGrades: list.length, pendingList: list }
   }, [myCourses, enrollments, grades])
 
   const stats = [
@@ -98,6 +121,48 @@ export default function FacultyDashboard() {
           )
         })}
       </div>
+
+      {/* Pending Grades Section */}
+      {pendingList.length > 0 && (
+        <div className="card border-amber-500/30">
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-2">
+              <Award className="w-5 h-5 text-amber-400" />
+              <h3 className="text-lg font-semibold text-white">Pending Grades</h3>
+            </div>
+            <span className="text-sm text-amber-400 bg-amber-500/10 px-2 py-1 rounded-lg border border-amber-500/30">
+              {pendingList.length} pending
+            </span>
+          </div>
+          <div className="space-y-3 max-h-60 overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-slate-600 scrollbar-track-slate-800">
+            {pendingList.map((enrollment) => (
+              <div 
+                key={`${enrollment.student_id}-${enrollment.course_id}`} 
+                className="flex items-center justify-between p-4 bg-slate-800/50 border border-amber-500/20 rounded-lg hover:bg-slate-700/50 transition-colors"
+              >
+                <div className="flex-1">
+                  <h4 className="font-medium text-white">{enrollment.student_name}</h4>
+                  <p className="text-sm text-slate-400">
+                    {enrollment.student_code} • {enrollment.course?.course_name || enrollment.course_name}
+                  </p>
+                </div>
+                <button
+                  onClick={() => navigate('/assign-grade', { 
+                    state: { 
+                      studentId: enrollment.student_id,
+                      courseId: enrollment.course_id 
+                    } 
+                  })}
+                  className="px-4 py-2 bg-amber-500 hover:bg-amber-600 text-white text-sm font-medium rounded-lg transition-colors flex items-center gap-2"
+                >
+                  <Award className="w-4 h-4" />
+                  Assign Grade
+                </button>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* My Courses */}
       <div className="card">
