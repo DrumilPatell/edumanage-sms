@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { useMutation, useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { coursesApi, semestersApi, usersApi } from '../services/api';
 import { useAuthStore } from '../store/authStore';
 import { ArrowLeft, BookOpen, FileText, Hash, Clock, Save, User } from 'lucide-react';
@@ -8,6 +8,7 @@ import { ArrowLeft, BookOpen, FileText, Hash, Clock, Save, User } from 'lucide-r
 export default function EditCoursePage() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const { user } = useAuthStore();
   const isAdmin = user?.role === 'admin';
   const [formData, setFormData] = useState({
@@ -57,6 +58,9 @@ export default function EditCoursePage() {
       faculty_id: data.faculty_id ? parseInt(data.faculty_id) : null
     }),
     onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['courses'] });
+      queryClient.invalidateQueries({ queryKey: ['course', id] });
+      queryClient.invalidateQueries({ queryKey: ['my-courses'] });
       setTimeout(() => navigate('/dashboard/courses'), 1500);
     },
   });

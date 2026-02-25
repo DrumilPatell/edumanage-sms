@@ -1,12 +1,13 @@
 import { useState, useEffect } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
-import { useMutation, useQuery } from '@tanstack/react-query'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { studentsApi, semestersApi } from '../services/api'
 import { ArrowLeft, Save, User, Mail, Phone, Calendar, Hash, Building, GraduationCap, BookOpen, AlertCircle } from 'lucide-react'
 
 export default function EditStudentPage() {
   const { id } = useParams()
   const navigate = useNavigate()
+  const queryClient = useQueryClient()
   const [formData, setFormData] = useState({
     student_id: '',
     full_name: '',
@@ -98,6 +99,8 @@ export default function EditStudentPage() {
   const mutation = useMutation({
     mutationFn: (data) => studentsApi.updateStudent(id, data),
     onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['students'] })
+      queryClient.invalidateQueries({ queryKey: ['student', id] })
       setTimeout(() => navigate('/dashboard/students'), 1500)
     },
   })

@@ -17,6 +17,7 @@ class CourseCreate(CourseBase):
 
 
 class CourseUpdate(BaseModel):
+    course_code: Optional[str] = None
     course_name: Optional[str] = None
     description: Optional[str] = None
     credits: Optional[int] = Field(None, ge=1, le=6)

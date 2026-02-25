@@ -95,7 +95,7 @@ async def update_course(
     course_id: int,
     course_update: CourseUpdate,
     db: Session = Depends(get_db),
-    _current_user: User = Depends(require_admin)
+    _current_user: User = Depends(require_faculty)
 ):
     course = db.query(Course).filter(Course.id == course_id).first()
     if not course:
@@ -105,6 +105,19 @@ async def update_course(
         )
     
     update_data = course_update.model_dump(exclude_unset=True)
+    
+    # Check if course_code is being changed and if it conflicts with another course
+    if "course_code" in update_data and update_data["course_code"] != course.course_code:
+        existing_course = db.query(Course).filter(
+            Course.course_code == update_data["course_code"],
+            Course.id != course_id
+        ).first()
+        if existing_course:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Course code already exists"
+            )
+    
     if "faculty_id" in update_data and update_data["faculty_id"]:
         faculty = db.query(User).filter(User.id == update_data["faculty_id"]).first()
         if not faculty or faculty.role not in ["admin", "faculty"]:

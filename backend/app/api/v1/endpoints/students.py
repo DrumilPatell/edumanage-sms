@@ -200,7 +200,7 @@ async def update_student(
     student_id: int,
     student_update: StudentUpdate,
     db: Session = Depends(get_db),
-    current_user: User = Depends(require_admin)
+    current_user: User = Depends(require_faculty)
 ):
     student = db.query(Student).filter(Student.id == student_id).first()
     if not student:
