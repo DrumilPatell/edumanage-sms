@@ -156,6 +156,11 @@ export const academicApi = {
     return response.data
   },
 
+  getMyAttendance: async (params) => {
+    const response = await api.get('/academic/attendance/me', { params })
+    return response.data
+  },
+
   createAttendance: async (data) => {
     const response = await api.post('/academic/attendance/', data)
     return response.data

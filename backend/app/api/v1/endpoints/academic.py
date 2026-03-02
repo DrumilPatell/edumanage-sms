@@ -115,6 +115,71 @@ async def create_attendance(
     return AttendanceResponse.model_validate(db_attendance)
 
 
+@router.get("/attendance/me", response_model=List[AttendanceWithDetails])
+async def get_my_attendance(
+    skip: int = Query(0, ge=0),
+    limit: int = Query(100, ge=1, le=500),
+    course_id: Optional[int] = None,
+    date_from: Optional[date] = None,
+    date_to: Optional[date] = None,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    """Get attendance records for the currently logged-in student only"""
+    # Find the student profile for the current user
+    student = db.query(Student).filter(Student.user_id == current_user.id).first()
+    if not student:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Student profile not found"
+        )
+    
+    # Query attendance only for this student
+    query = db.query(
+        Attendance,
+        User.full_name.label('student_name'),
+        Student.student_id.label('student_code'),
+        Course.course_name.label('course_name'),
+        Course.course_code.label('course_code')
+    ).join(
+        Student, Attendance.student_id == Student.id
+    ).join(
+        User, Student.user_id == User.id
+    ).join(
+        Course, Attendance.course_id == Course.id
+    ).filter(
+        Attendance.student_id == student.id
+    )
+    
+    if course_id:
+        query = query.filter(Attendance.course_id == course_id)
+    if date_from:
+        query = query.filter(Attendance.date >= date_from)
+    if date_to:
+        query = query.filter(Attendance.date <= date_to)
+    
+    records = query.order_by(Attendance.date.desc()).offset(skip).limit(limit).all()
+    
+    result = []
+    for record, student_name, student_code, course_name, course_code in records:
+        record_dict = {
+            "id": record.id,
+            "student_id": record.student_id,
+            "course_id": record.course_id,
+            "date": record.date,
+            "status": record.status,
+            "notes": record.notes,
+            "created_at": record.created_at,
+            "student_name": student_name,
+            "student_code": student_code,
+            "course_name": course_name,
+            "course_code": course_code
+        }
+        result.append(AttendanceWithDetails(**record_dict))
+    
+    return result
+
+
 @router.get("/attendance/{attendance_id}", response_model=AttendanceWithDetails)
 async def get_attendance_by_id(
     attendance_id: int,
@@ -252,7 +317,7 @@ async def get_grades(
     if assessment_type:
         query = query.filter(Grade.assessment_type == assessment_type)
     
-    records = query.order_by(Grade.date_assessed.desc().nullslast(), Grade.id.desc()).offset(skip).limit(limit).all()
+    records = query.order_by(Grade.date_assessed.asc().nullslast(), Grade.id.asc()).offset(skip).limit(limit).all()
     
     result = []
     for record, student_name, student_code, course_name, course_code in records:

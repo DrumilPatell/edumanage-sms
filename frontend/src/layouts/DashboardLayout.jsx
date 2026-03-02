@@ -30,6 +30,7 @@ export default function DashboardLayout() {
     { name: 'Courses', href: '/dashboard/courses', icon: BookOpen, roles: ['admin', 'faculty', 'student'] },
     { name: 'Enrollments', href: '/dashboard/enrollments', icon: ClipboardList, roles: ['admin'] },
     { name: 'Attendance', href: '/dashboard/attendance', icon: ClipboardList, roles: ['admin', 'faculty'] },
+    { name: 'Attendance', href: '/dashboard/my-attendance', icon: ClipboardList, roles: ['student'] },
     { name: 'Grades', href: '/dashboard/grades', icon: Award, roles: ['admin', 'faculty', 'student'] },
   ]
 

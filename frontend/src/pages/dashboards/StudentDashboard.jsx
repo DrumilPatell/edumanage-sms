@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/react-query'
 import { studentsApi, enrollmentsApi, academicApi } from '../../services/api'
 import { useAuthStore } from '../../store/authStore'
-import { BookOpen, Award, Calendar } from 'lucide-react'
+import { BookOpen, Award, Calendar, ClipboardCheck } from 'lucide-react'
 
 export default function StudentDashboard() {
   const { user } = useAuthStore()
@@ -22,6 +22,24 @@ export default function StudentDashboard() {
     queryFn: () => profile ? academicApi.getGrades({ student_id: profile.id }) : [],
     enabled: !!profile,
   })
+
+  const { data: attendance = [] } = useQuery({
+    queryKey: ['my-attendance'],
+    queryFn: () => academicApi.getMyAttendance(),
+    enabled: !!profile,
+  })
+
+  // Calculate attendance statistics
+  const attendanceStats = {
+    total: attendance.length,
+    present: attendance.filter(a => a.status === 'present').length,
+    absent: attendance.filter(a => a.status === 'absent').length,
+    late: attendance.filter(a => a.status === 'late').length,
+    excused: attendance.filter(a => a.status === 'excused').length,
+  }
+  const attendancePercentage = attendanceStats.total > 0 
+    ? ((attendanceStats.present + attendanceStats.late) / attendanceStats.total * 100).toFixed(1)
+    : 0
 
   const stats = [
     {
@@ -48,6 +66,14 @@ export default function StudentDashboard() {
       textColor: 'text-purple-400',
       borderColor: 'border-purple-500/20',
     },
+    {
+      name: 'Attendance',
+      value: `${attendancePercentage}%`,
+      icon: ClipboardCheck,
+      bgColor: 'bg-amber-500/10',
+      textColor: 'text-amber-400',
+      borderColor: 'border-amber-500/20',
+    },
   ]
 
   return (
@@ -73,7 +99,7 @@ export default function StudentDashboard() {
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         {stats.map((stat) => {
           const Icon = stat.icon
           return (
@@ -140,6 +166,64 @@ export default function StudentDashboard() {
           ))}
           {grades.length === 0 && (
             <p className="text-sm text-slate-400 text-center py-8">No grades yet</p>
+          )}
+        </div>
+      </div>
+
+      {/* My Attendance */}
+      <div className="card">
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="text-lg font-semibold text-white">My Attendance</h3>
+          <span className="text-sm text-slate-400 bg-slate-700/50 px-2 py-1 rounded-lg">
+            {attendancePercentage}% Overall
+          </span>
+        </div>
+
+        {/* Attendance Summary */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
+          <div className="p-3 bg-green-500/10 border border-green-500/20 rounded-lg text-center">
+            <p className="text-2xl font-bold text-green-400">{attendanceStats.present}</p>
+            <p className="text-xs text-green-300/70">Present</p>
+          </div>
+          <div className="p-3 bg-red-500/10 border border-red-500/20 rounded-lg text-center">
+            <p className="text-2xl font-bold text-red-400">{attendanceStats.absent}</p>
+            <p className="text-xs text-red-300/70">Absent</p>
+          </div>
+          <div className="p-3 bg-yellow-500/10 border border-yellow-500/20 rounded-lg text-center">
+            <p className="text-2xl font-bold text-yellow-400">{attendanceStats.late}</p>
+            <p className="text-xs text-yellow-300/70">Late</p>
+          </div>
+          <div className="p-3 bg-blue-500/10 border border-blue-500/20 rounded-lg text-center">
+            <p className="text-2xl font-bold text-blue-400">{attendanceStats.excused}</p>
+            <p className="text-xs text-blue-300/70">Excused</p>
+          </div>
+        </div>
+
+        {/* Attendance Records */}
+        <div className="space-y-3 max-h-80 overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-slate-600 scrollbar-track-slate-800">
+          {attendance.slice(0, 20).map((record) => (
+            <div key={record.id} className="flex items-center justify-between p-3 bg-slate-800/50 border border-slate-700/50 rounded-lg">
+              <div className="flex-1">
+                <p className="font-medium text-white">{record.course_name}</p>
+                <p className="text-sm text-slate-400">{record.course_code}</p>
+              </div>
+              <div className="text-right">
+                <span className={`badge ${
+                  record.status === 'present' ? 'badge-success' :
+                  record.status === 'absent' ? 'badge-error' :
+                  record.status === 'late' ? 'badge-warning' :
+                  'badge-primary'
+                }`}>
+                  {record.status}
+                </span>
+                <p className="text-xs text-slate-400 mt-1">
+                  {new Date(record.date).toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit', year: 'numeric' })}
+                </p>
+              </div>
+            </div>
+          ))}
+          {attendance.length === 0 && (
+            <p className="text-sm text-slate-400 text-center py-8">No attendance records yet</p>
           )}
         </div>
       </div>
