@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { studentsApi, academicApi, enrollmentsApi } from '../services/api'
 import { ChevronLeft, ChevronRight, BookOpen, Check, X, Clock, AlertCircle } from 'lucide-react'
@@ -24,14 +24,29 @@ export default function StudentAttendancePage() {
     enabled: !!profile,
   })
 
-  // Get unique courses from enrollments
+  // Get unique courses from enrollments with enrollment date
   const courses = useMemo(() => {
     return enrollments.map(e => ({
       id: e.course_id,
       name: e.course_name,
-      code: e.course_code
+      code: e.course_code,
+      enrollmentDate: e.enrollment_date
     }))
   }, [enrollments])
+
+  // Get enrollment date for selected course
+  const selectedCourseEnrollmentDate = useMemo(() => {
+    if (!selectedCourseId) return null
+    const course = courses.find(c => c.id === selectedCourseId)
+    return course?.enrollmentDate ? new Date(course.enrollmentDate) : null
+  }, [selectedCourseId, courses])
+
+  // Navigate to enrollment month when course is selected
+  useEffect(() => {
+    if (selectedCourseEnrollmentDate) {
+      setCurrentDate(new Date(selectedCourseEnrollmentDate.getFullYear(), selectedCourseEnrollmentDate.getMonth(), 1))
+    }
+  }, [selectedCourseEnrollmentDate])
 
   // Filter attendance for selected course
   const filteredAttendance = useMemo(() => {
@@ -73,6 +88,12 @@ export default function StudentAttendancePage() {
   const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
 
   const goToPrevMonth = () => {
+    // Don't go before enrollment month
+    if (selectedCourseEnrollmentDate) {
+      const prevMonth = new Date(year, month - 1, 1)
+      const enrollmentMonth = new Date(selectedCourseEnrollmentDate.getFullYear(), selectedCourseEnrollmentDate.getMonth(), 1)
+      if (prevMonth < enrollmentMonth) return
+    }
     setCurrentDate(new Date(year, month - 1, 1))
   }
 
@@ -81,19 +102,25 @@ export default function StudentAttendancePage() {
   }
 
   const goToToday = () => {
-    setCurrentDate(new Date())
+    const today = new Date()
+    // If today is before enrollment, go to enrollment month instead
+    if (selectedCourseEnrollmentDate && today < selectedCourseEnrollmentDate) {
+      setCurrentDate(new Date(selectedCourseEnrollmentDate.getFullYear(), selectedCourseEnrollmentDate.getMonth(), 1))
+    } else {
+      setCurrentDate(today)
+    }
   }
 
   const getStatusIcon = (status) => {
     switch (status) {
       case 'present':
-        return <Check className="w-4 h-4 text-green-400" />
+        return <Check className="w-3 h-3 text-green-400" />
       case 'absent':
-        return <X className="w-4 h-4 text-red-400" />
+        return <X className="w-3 h-3 text-red-400" />
       case 'late':
-        return <Clock className="w-4 h-4 text-yellow-400" />
+        return <Clock className="w-3 h-3 text-yellow-400" />
       case 'excused':
-        return <AlertCircle className="w-4 h-4 text-blue-400" />
+        return <AlertCircle className="w-3 h-3 text-blue-400" />
       default:
         return null
     }
@@ -114,17 +141,29 @@ export default function StudentAttendancePage() {
   
   // Add empty cells for days before the first day of month
   for (let i = 0; i < firstDayOfMonth; i++) {
-    calendarDays.push({ day: null, attendance: null })
+    calendarDays.push({ day: null, attendance: null, isBeforeEnrollment: false })
   }
   
   // Add days of the month
   for (let day = 1; day <= daysInMonth; day++) {
     const dateKey = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`
+    const currentDayDate = new Date(year, month, day)
+    
+    // Check if this date is before enrollment date
+    let isBeforeEnrollment = false
+    if (selectedCourseEnrollmentDate) {
+      const enrollmentDateOnly = new Date(selectedCourseEnrollmentDate)
+      enrollmentDateOnly.setHours(0, 0, 0, 0)
+      currentDayDate.setHours(0, 0, 0, 0)
+      isBeforeEnrollment = currentDayDate < enrollmentDateOnly
+    }
+    
     calendarDays.push({
       day,
       dateKey,
       attendance: attendanceMap[dateKey] || null,
-      isToday: new Date().toISOString().split('T')[0] === dateKey
+      isToday: new Date().toISOString().split('T')[0] === dateKey,
+      isBeforeEnrollment
     })
   }
 
@@ -137,7 +176,7 @@ export default function StudentAttendancePage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       <div>
         <h1 className="text-2xl font-bold text-white">My Attendance</h1>
         <p className="text-slate-400 mt-1">Select a course to view your attendance calendar</p>
@@ -233,67 +272,86 @@ export default function StudentAttendancePage() {
           </div>
 
           {/* Calendar */}
-          <div className="card">
+          <div className="card py-4">
             {/* Calendar Header */}
-            <div className="flex items-center justify-between mb-6">
-              <h3 className="text-lg font-semibold text-white">
-                {monthNames[month]} {year}
-              </h3>
+            <div className="flex items-center justify-between mb-4">
+              <div>
+                <h3 className="text-base sm:text-lg font-semibold text-white">
+                  {monthNames[month]} {year}
+                </h3>
+                {selectedCourseEnrollmentDate && (
+                  <p className="text-xs text-slate-400 mt-0.5">
+                    Enrolled: {new Date(selectedCourseEnrollmentDate).toLocaleDateString('en-GB', { 
+                      day: '2-digit', 
+                      month: 'short', 
+                      year: 'numeric' 
+                    })}
+                  </p>
+                )}
+              </div>
               <div className="flex items-center gap-2">
                 <button
                   onClick={goToToday}
-                  className="px-3 py-1.5 text-sm bg-slate-700 hover:bg-slate-600 text-white rounded-lg transition-colors"
+                  className="px-2.5 py-1 text-xs sm:text-sm bg-slate-700 hover:bg-slate-600 text-white rounded-lg transition-colors"
                 >
                   Today
                 </button>
                 <button
                   onClick={goToPrevMonth}
-                  className="p-2 hover:bg-slate-700 rounded-lg transition-colors"
+                  className="p-1.5 hover:bg-slate-700 rounded-lg transition-colors"
                 >
-                  <ChevronLeft className="w-5 h-5 text-slate-400" />
+                  <ChevronLeft className="w-4 h-4 text-slate-400" />
                 </button>
                 <button
                   onClick={goToNextMonth}
-                  className="p-2 hover:bg-slate-700 rounded-lg transition-colors"
+                  className="p-1.5 hover:bg-slate-700 rounded-lg transition-colors"
                 >
-                  <ChevronRight className="w-5 h-5 text-slate-400" />
+                  <ChevronRight className="w-4 h-4 text-slate-400" />
                 </button>
               </div>
             </div>
 
             {/* Day Headers */}
-            <div className="grid grid-cols-7 gap-1 mb-2">
+            <div className="grid grid-cols-7 gap-0.5 mb-1">
               {dayNames.map(day => (
-                <div key={day} className="text-center text-sm font-medium text-slate-400 py-2">
+                <div key={day} className="text-center text-xs font-medium text-slate-400 py-1">
                   {day}
                 </div>
               ))}
             </div>
 
             {/* Calendar Grid */}
-            <div className="grid grid-cols-7 gap-1">
+            <div className="grid grid-cols-7 gap-0.5">
               {calendarDays.map((item, index) => (
                 <div
                   key={index}
-                  className={`aspect-square p-1 rounded-lg flex flex-col items-center justify-center relative ${
+                  className={`h-12 sm:h-14 md:h-16 p-1 rounded flex flex-col items-center justify-center relative ${
                     item.day === null 
                       ? 'bg-transparent' 
-                      : item.attendance 
-                        ? getStatusColor(item.attendance.status)
-                        : item.isToday
-                          ? 'bg-slate-700/50 border border-amber-500/50'
-                          : 'bg-slate-800/30 border border-slate-700/30'
+                      : item.isBeforeEnrollment
+                        ? 'bg-slate-900/50 border border-slate-800/50 opacity-40'
+                        : item.attendance 
+                          ? getStatusColor(item.attendance.status)
+                          : item.isToday
+                            ? 'bg-slate-700/50 border border-amber-500/50'
+                            : 'bg-slate-800/30 border border-slate-700/30'
                   }`}
                 >
                   {item.day && (
                     <>
-                      <span className={`text-sm font-medium ${
-                        item.attendance ? '' : item.isToday ? 'text-amber-400' : 'text-slate-300'
+                      <span className={`text-xs sm:text-sm font-medium ${
+                        item.isBeforeEnrollment 
+                          ? 'text-slate-600 line-through' 
+                          : item.attendance 
+                            ? '' 
+                            : item.isToday 
+                              ? 'text-amber-400' 
+                              : 'text-slate-300'
                       }`}>
                         {item.day}
                       </span>
-                      {item.attendance && (
-                        <div className="mt-0.5">
+                      {item.attendance && !item.isBeforeEnrollment && (
+                        <div className="mt-0">
                           {getStatusIcon(item.attendance.status)}
                         </div>
                       )}
@@ -304,30 +362,30 @@ export default function StudentAttendancePage() {
             </div>
 
             {/* Legend */}
-            <div className="flex flex-wrap items-center justify-center gap-4 mt-6 pt-4 border-t border-slate-700/50">
-              <div className="flex items-center gap-2">
-                <div className="w-4 h-4 rounded bg-green-500/20 border border-green-500/50 flex items-center justify-center">
-                  <Check className="w-3 h-3 text-green-400" />
+            <div className="flex flex-wrap items-center justify-center gap-3 mt-4 pt-3 border-t border-slate-700/50">
+              <div className="flex items-center gap-1.5">
+                <div className="w-3 h-3 rounded bg-green-500/20 border border-green-500/50 flex items-center justify-center">
+                  <Check className="w-2 h-2 text-green-400" />
                 </div>
-                <span className="text-sm text-slate-400">Present</span>
+                <span className="text-xs text-slate-400">Present</span>
               </div>
-              <div className="flex items-center gap-2">
-                <div className="w-4 h-4 rounded bg-red-500/20 border border-red-500/50 flex items-center justify-center">
-                  <X className="w-3 h-3 text-red-400" />
+              <div className="flex items-center gap-1.5">
+                <div className="w-3 h-3 rounded bg-red-500/20 border border-red-500/50 flex items-center justify-center">
+                  <X className="w-2 h-2 text-red-400" />
                 </div>
-                <span className="text-sm text-slate-400">Absent</span>
+                <span className="text-xs text-slate-400">Absent</span>
               </div>
-              <div className="flex items-center gap-2">
-                <div className="w-4 h-4 rounded bg-yellow-500/20 border border-yellow-500/50 flex items-center justify-center">
-                  <Clock className="w-3 h-3 text-yellow-400" />
+              <div className="flex items-center gap-1.5">
+                <div className="w-3 h-3 rounded bg-yellow-500/20 border border-yellow-500/50 flex items-center justify-center">
+                  <Clock className="w-2 h-2 text-yellow-400" />
                 </div>
-                <span className="text-sm text-slate-400">Late</span>
+                <span className="text-xs text-slate-400">Late</span>
               </div>
-              <div className="flex items-center gap-2">
-                <div className="w-4 h-4 rounded bg-blue-500/20 border border-blue-500/50 flex items-center justify-center">
-                  <AlertCircle className="w-3 h-3 text-blue-400" />
+              <div className="flex items-center gap-1.5">
+                <div className="w-3 h-3 rounded bg-blue-500/20 border border-blue-500/50 flex items-center justify-center">
+                  <AlertCircle className="w-2 h-2 text-blue-400" />
                 </div>
-                <span className="text-sm text-slate-400">Excused</span>
+                <span className="text-xs text-slate-400">Excused</span>
               </div>
             </div>
           </div>

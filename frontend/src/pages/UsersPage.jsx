@@ -3,7 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { useNavigate } from 'react-router-dom'
 import { usersApi } from '../services/api'
 import { useAuthStore } from '../store/authStore'
-import { Edit, Trash2, UserPlus, Search } from 'lucide-react'
+import { Edit, Trash2, UserPlus, Search, X } from 'lucide-react'
 
 export default function UsersPage() {
   const { user } = useAuthStore()
@@ -78,8 +78,16 @@ export default function UsersPage() {
           placeholder="Search by name, email, or role..."
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
-          className="w-full pl-10 pr-4 py-2 bg-slate-800 border border-slate-700 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:border-amber-500 transition-colors"
+          className={`w-full pl-10 py-2 bg-slate-800 border border-slate-700 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:border-amber-500 transition-colors ${searchTerm ? 'pr-10' : 'pr-4'}`}
         />
+        {searchTerm && (
+          <button
+            onClick={() => setSearchTerm('')}
+            className="absolute right-3 top-1/2 transform -translate-y-1/2 text-slate-400 hover:text-white transition-colors"
+          >
+            <X className="w-5 h-5" />
+          </button>
+        )}
       </div>
 
       <div className="card">
