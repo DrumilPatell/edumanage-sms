@@ -7,7 +7,7 @@ class AttendanceBase(BaseModel):
     student_id: int
     course_id: int
     date: DateType
-    status: str  # present, absent, late, excused
+    status: str  # present, absent
     notes: Optional[str] = None
 
 

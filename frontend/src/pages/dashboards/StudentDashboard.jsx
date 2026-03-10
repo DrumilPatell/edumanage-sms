@@ -34,11 +34,9 @@ export default function StudentDashboard() {
     total: attendance.length,
     present: attendance.filter(a => a.status === 'present').length,
     absent: attendance.filter(a => a.status === 'absent').length,
-    late: attendance.filter(a => a.status === 'late').length,
-    excused: attendance.filter(a => a.status === 'excused').length,
   }
   const attendancePercentage = attendanceStats.total > 0 
-    ? ((attendanceStats.present + attendanceStats.late) / attendanceStats.total * 100).toFixed(1)
+    ? (attendanceStats.present / attendanceStats.total * 100).toFixed(1)
     : 0
 
   const stats = [
@@ -211,7 +209,6 @@ export default function StudentDashboard() {
                 <span className={`badge ${
                   record.status === 'present' ? 'badge-success' :
                   record.status === 'absent' ? 'badge-error' :
-                  record.status === 'late' ? 'badge-warning' :
                   'badge-primary'
                 }`}>
                   {record.status}

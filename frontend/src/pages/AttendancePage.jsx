@@ -3,7 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { useNavigate } from 'react-router-dom'
 import { academicApi, studentsApi, coursesApi, enrollmentsApi } from '../services/api'
 import { useAuthStore } from '../store/authStore'
-import { Plus, ChevronLeft, ChevronRight, Users, BookOpen, Check, X, Clock, AlertCircle, Trash2 } from 'lucide-react'
+import { Plus, ChevronLeft, ChevronRight, Users, BookOpen, Check, X, Trash2 } from 'lucide-react'
 import api from '../lib/api'
 
 export default function AttendancePage() {
@@ -98,10 +98,8 @@ export default function AttendancePage() {
     const total = filteredAttendance.length
     const present = filteredAttendance.filter(a => a.status === 'present').length
     const absent = filteredAttendance.filter(a => a.status === 'absent').length
-    const late = filteredAttendance.filter(a => a.status === 'late').length
-    const excused = filteredAttendance.filter(a => a.status === 'excused').length
-    const percentage = total > 0 ? ((present + late) / total * 100).toFixed(1) : 0
-    return { total, present, absent, late, excused, percentage }
+    const percentage = total > 0 ? (present / total * 100).toFixed(1) : 0
+    return { total, present, absent, percentage }
   }, [filteredAttendance])
 
   // Overall stats
@@ -109,9 +107,7 @@ export default function AttendancePage() {
     const total = attendance.length
     const present = attendance.filter(r => r.status === 'present').length
     const absent = attendance.filter(r => r.status === 'absent').length
-    const late = attendance.filter(r => r.status === 'late').length
-    const excused = attendance.filter(r => r.status === 'excused').length
-    return { total, present, absent, late, excused }
+    return { total, present, absent }
   }, [attendance])
 
   // Calendar helpers
@@ -154,10 +150,6 @@ export default function AttendancePage() {
         return <Check className="w-3 h-3 text-green-400" />
       case 'absent':
         return <X className="w-3 h-3 text-red-400" />
-      case 'late':
-        return <Clock className="w-3 h-3 text-yellow-400" />
-      case 'excused':
-        return <AlertCircle className="w-3 h-3 text-blue-400" />
       default:
         return null
     }
@@ -167,8 +159,6 @@ export default function AttendancePage() {
     switch (status) {
       case 'present': return 'bg-green-500/20 border-green-500/50 text-green-400'
       case 'absent': return 'bg-red-500/20 border-red-500/50 text-red-400'
-      case 'late': return 'bg-yellow-500/20 border-yellow-500/50 text-yellow-400'
-      case 'excused': return 'bg-blue-500/20 border-blue-500/50 text-blue-400'
       default: return ''
     }
   }
@@ -345,24 +335,6 @@ export default function AttendancePage() {
             </div>
           </div>
         </div>
-        <div className="bg-amber-500/10 border border-amber-500/30 rounded-xl p-3">
-          <div className="flex items-center gap-2">
-            <Clock className="w-4 h-4 text-amber-400" />
-            <div>
-              <p className="text-xl font-bold text-amber-400">{overallStats.late}</p>
-              <p className="text-xs text-slate-400">Late</p>
-            </div>
-          </div>
-        </div>
-        <div className="bg-blue-500/10 border border-blue-500/30 rounded-xl p-3">
-          <div className="flex items-center gap-2">
-            <AlertCircle className="w-4 h-4 text-blue-400" />
-            <div>
-              <p className="text-xl font-bold text-blue-400">{overallStats.excused}</p>
-              <p className="text-xs text-slate-400">Excused</p>
-            </div>
-          </div>
-        </div>
       </div>
 
       {/* Course Selector */}
@@ -371,7 +343,7 @@ export default function AttendancePage() {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
           {courses.map((course) => {
             const courseAttendance = attendance.filter(a => a.course_id === course.id)
-            const coursePresent = courseAttendance.filter(a => a.status === 'present' || a.status === 'late').length
+            const coursePresent = courseAttendance.filter(a => a.status === 'present').length
             const courseTotal = courseAttendance.length
             const studentsInCourse = enrollments.filter(e => e.course_id === course.id).length
             
@@ -424,7 +396,7 @@ export default function AttendancePage() {
               const studentAttendance = attendance.filter(
                 a => a.course_id === selectedCourseId && a.student_id === student.id
               )
-              const studentPresent = studentAttendance.filter(a => a.status === 'present' || a.status === 'late').length
+              const studentPresent = studentAttendance.filter(a => a.status === 'present').length
               const studentTotal = studentAttendance.length
               const studentPercentage = studentTotal > 0 ? ((studentPresent / studentTotal) * 100).toFixed(0) : 0
               
@@ -466,7 +438,7 @@ export default function AttendancePage() {
       {selectedCourseId && selectedStudentId && (
         <>
           {/* Stats for selected student */}
-          <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
+          <div className="grid grid-cols-3 gap-3">
             <div className="card bg-gradient-to-br from-amber-500/20 to-amber-600/20 border-amber-500/30 py-3">
               <div className="text-center">
                 <p className="text-2xl font-bold text-amber-400">{stats.percentage}%</p>
@@ -483,18 +455,6 @@ export default function AttendancePage() {
               <div className="text-center">
                 <p className="text-xl font-bold text-red-400">{stats.absent}</p>
                 <p className="text-xs text-slate-400">Absent</p>
-              </div>
-            </div>
-            <div className="card py-3">
-              <div className="text-center">
-                <p className="text-xl font-bold text-yellow-400">{stats.late}</p>
-                <p className="text-xs text-slate-400">Late</p>
-              </div>
-            </div>
-            <div className="card py-3">
-              <div className="text-center">
-                <p className="text-xl font-bold text-blue-400">{stats.excused}</p>
-                <p className="text-xs text-slate-400">Excused</p>
               </div>
             </div>
           </div>
@@ -607,18 +567,6 @@ export default function AttendancePage() {
                 </div>
                 <span className="text-xs text-slate-400">Absent</span>
               </div>
-              <div className="flex items-center gap-1.5">
-                <div className="w-3 h-3 rounded bg-yellow-500/20 border border-yellow-500/50 flex items-center justify-center">
-                  <Clock className="w-2 h-2 text-yellow-400" />
-                </div>
-                <span className="text-xs text-slate-400">Late</span>
-              </div>
-              <div className="flex items-center gap-1.5">
-                <div className="w-3 h-3 rounded bg-blue-500/20 border border-blue-500/50 flex items-center justify-center">
-                  <AlertCircle className="w-2 h-2 text-blue-400" />
-                </div>
-                <span className="text-xs text-slate-400">Excused</span>
-              </div>
               {canEdit && (
                 <span className="text-xs text-slate-500">| Click to edit</span>
               )}
@@ -672,23 +620,19 @@ export default function AttendancePage() {
             <div className="mb-4">
               <label className="block text-sm font-medium text-slate-300 mb-2">Status</label>
               <div className="grid grid-cols-2 gap-2">
-                {['present', 'absent', 'late', 'excused'].map((status) => (
+                {['present', 'absent'].map((status) => (
                   <button
                     key={status}
                     onClick={() => setEditForm(prev => ({ ...prev, status }))}
                     className={`p-3 rounded-lg border-2 transition-all capitalize flex items-center justify-center gap-2 ${
                       editForm.status === status
                         ? status === 'present' ? 'border-green-500 bg-green-500/20 text-green-400'
-                        : status === 'absent' ? 'border-red-500 bg-red-500/20 text-red-400'
-                        : status === 'late' ? 'border-yellow-500 bg-yellow-500/20 text-yellow-400'
-                        : 'border-blue-500 bg-blue-500/20 text-blue-400'
+                        : 'border-red-500 bg-red-500/20 text-red-400'
                         : 'border-slate-600 bg-slate-700/50 text-slate-300 hover:border-slate-500'
                     }`}
                   >
                     {status === 'present' && <Check className="w-4 h-4" />}
                     {status === 'absent' && <X className="w-4 h-4" />}
-                    {status === 'late' && <Clock className="w-4 h-4" />}
-                    {status === 'excused' && <AlertCircle className="w-4 h-4" />}
                     {status}
                   </button>
                 ))}

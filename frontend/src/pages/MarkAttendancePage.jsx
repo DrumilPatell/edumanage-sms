@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { ArrowLeft, ClipboardCheck, BookOpen, User, ChevronLeft, ChevronRight, CheckCircle, XCircle, Calendar, Clock, Shield } from 'lucide-react';
+import { ArrowLeft, ClipboardCheck, BookOpen, User, ChevronLeft, ChevronRight, CheckCircle, XCircle, Calendar } from 'lucide-react';
 import api from '../lib/api';
 
 const MarkAttendancePage = () => {
@@ -95,7 +95,8 @@ const MarkAttendancePage = () => {
       response.data.forEach(record => {
         existing[record.date] = record.status;
       });
-      setExistingAttendance(existing);
+      // Merge with existing data instead of replacing to preserve data from other months
+      setExistingAttendance(prev => ({ ...prev, ...existing }));
     } catch (err) {
       console.error('Failed to fetch existing attendance:', err);
     }
@@ -140,15 +141,11 @@ const MarkAttendancePage = () => {
       const current = prev[dateKey] || existingAttendance[dateKey] || null;
       let newStatus;
       
-      // Cycle through: present -> absent -> late -> excused -> null
+      // Cycle through: present -> absent -> null
       if (current === null) {
         newStatus = 'present';
       } else if (current === 'present') {
         newStatus = 'absent';
-      } else if (current === 'absent') {
-        newStatus = 'late';
-      } else if (current === 'late') {
-        newStatus = 'excused';
       } else {
         newStatus = null;
       }
@@ -180,7 +177,6 @@ const MarkAttendancePage = () => {
       if (prevMonth < enrollmentMonthStart) return;
     }
     setCurrentMonth(prev => new Date(prev.getFullYear(), prev.getMonth() - 1, 1));
-    setAttendanceRecords({});
   };
 
   const handleNextMonth = () => {
@@ -188,7 +184,6 @@ const MarkAttendancePage = () => {
     const today = new Date();
     if (nextMonth <= today) {
       setCurrentMonth(nextMonth);
-      setAttendanceRecords({});
     }
   };
 
@@ -403,18 +398,6 @@ const MarkAttendancePage = () => {
                       <span className="text-slate-300 text-sm">Absent</span>
                     </div>
                     <div className="flex items-center gap-2">
-                      <div className="w-8 h-8 rounded-lg bg-amber-500 flex items-center justify-center">
-                        <Clock className="w-4 h-4 text-white" />
-                      </div>
-                      <span className="text-slate-300 text-sm">Late</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <div className="w-8 h-8 rounded-lg bg-blue-500 flex items-center justify-center">
-                        <Shield className="w-4 h-4 text-white" />
-                      </div>
-                      <span className="text-slate-300 text-sm">Excused</span>
-                    </div>
-                    <div className="flex items-center gap-2">
                       <div className="w-8 h-8 rounded-lg bg-slate-600 border border-slate-500"></div>
                       <span className="text-slate-300 text-sm">Not Marked</span>
                     </div>
@@ -522,10 +505,6 @@ const MarkAttendancePage = () => {
                               ? 'bg-emerald-500 text-white hover:bg-emerald-600 shadow-lg shadow-emerald-500/30'
                               : status === 'absent'
                               ? 'bg-red-500 text-white hover:bg-red-600 shadow-lg shadow-red-500/30'
-                              : status === 'late'
-                              ? 'bg-amber-500 text-white hover:bg-amber-600 shadow-lg shadow-amber-500/30'
-                              : status === 'excused'
-                              ? 'bg-blue-500 text-white hover:bg-blue-600 shadow-lg shadow-blue-500/30'
                               : 'bg-slate-600 text-slate-200 hover:bg-slate-500 border border-slate-500'
                           } ${isToday ? 'ring-2 ring-amber-400 ring-offset-2 ring-offset-slate-800' : ''}`}
                         >
@@ -534,8 +513,6 @@ const MarkAttendancePage = () => {
                             <span className="absolute bottom-1">
                               {status === 'present' && <CheckCircle className="w-3 h-3" />}
                               {status === 'absent' && <XCircle className="w-3 h-3" />}
-                              {status === 'late' && <Clock className="w-3 h-3" />}
-                              {status === 'excused' && <Shield className="w-3 h-3" />}
                             </span>
                           )}
                           {hasChange && (

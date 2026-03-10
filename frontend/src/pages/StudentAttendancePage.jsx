@@ -1,7 +1,7 @@
 import { useState, useMemo, useEffect } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { studentsApi, academicApi, enrollmentsApi } from '../services/api'
-import { ChevronLeft, ChevronRight, BookOpen, Check, X, Clock, AlertCircle } from 'lucide-react'
+import { ChevronLeft, ChevronRight, BookOpen, Check, X } from 'lucide-react'
 
 export default function StudentAttendancePage() {
   const [selectedCourseId, setSelectedCourseId] = useState(null)
@@ -69,10 +69,8 @@ export default function StudentAttendancePage() {
     const total = filteredAttendance.length
     const present = filteredAttendance.filter(a => a.status === 'present').length
     const absent = filteredAttendance.filter(a => a.status === 'absent').length
-    const late = filteredAttendance.filter(a => a.status === 'late').length
-    const excused = filteredAttendance.filter(a => a.status === 'excused').length
-    const percentage = total > 0 ? ((present + late) / total * 100).toFixed(1) : 0
-    return { total, present, absent, late, excused, percentage }
+    const percentage = total > 0 ? (present / total * 100).toFixed(1) : 0
+    return { total, present, absent, percentage }
   }, [filteredAttendance])
 
   // Calendar helpers
@@ -117,10 +115,6 @@ export default function StudentAttendancePage() {
         return <Check className="w-3 h-3 text-green-400" />
       case 'absent':
         return <X className="w-3 h-3 text-red-400" />
-      case 'late':
-        return <Clock className="w-3 h-3 text-yellow-400" />
-      case 'excused':
-        return <AlertCircle className="w-3 h-3 text-blue-400" />
       default:
         return null
     }
@@ -130,8 +124,6 @@ export default function StudentAttendancePage() {
     switch (status) {
       case 'present': return 'bg-green-500/20 border-green-500/50 text-green-400'
       case 'absent': return 'bg-red-500/20 border-red-500/50 text-red-400'
-      case 'late': return 'bg-yellow-500/20 border-yellow-500/50 text-yellow-400'
-      case 'excused': return 'bg-blue-500/20 border-blue-500/50 text-blue-400'
       default: return ''
     }
   }
@@ -188,7 +180,7 @@ export default function StudentAttendancePage() {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
           {courses.map((course) => {
             const courseAttendance = attendance.filter(a => a.course_id === course.id)
-            const coursePresent = courseAttendance.filter(a => a.status === 'present' || a.status === 'late').length
+            const coursePresent = courseAttendance.filter(a => a.status === 'present').length
             const courseTotal = courseAttendance.length
             const coursePercentage = courseTotal > 0 ? ((coursePresent / courseTotal) * 100).toFixed(0) : 0
             
@@ -238,7 +230,7 @@ export default function StudentAttendancePage() {
       {selectedCourseId && (
         <>
           {/* Stats for selected course */}
-          <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
+          <div className="grid grid-cols-3 gap-3">
             <div className="card bg-gradient-to-br from-amber-500/20 to-amber-600/20 border-amber-500/30 py-3">
               <div className="text-center">
                 <p className="text-2xl font-bold text-amber-400">{stats.percentage}%</p>
@@ -255,18 +247,6 @@ export default function StudentAttendancePage() {
               <div className="text-center">
                 <p className="text-xl font-bold text-red-400">{stats.absent}</p>
                 <p className="text-xs text-slate-400">Absent</p>
-              </div>
-            </div>
-            <div className="card py-3">
-              <div className="text-center">
-                <p className="text-xl font-bold text-yellow-400">{stats.late}</p>
-                <p className="text-xs text-slate-400">Late</p>
-              </div>
-            </div>
-            <div className="card py-3">
-              <div className="text-center">
-                <p className="text-xl font-bold text-blue-400">{stats.excused}</p>
-                <p className="text-xs text-slate-400">Excused</p>
               </div>
             </div>
           </div>
@@ -374,18 +354,6 @@ export default function StudentAttendancePage() {
                   <X className="w-2 h-2 text-red-400" />
                 </div>
                 <span className="text-xs text-slate-400">Absent</span>
-              </div>
-              <div className="flex items-center gap-1.5">
-                <div className="w-3 h-3 rounded bg-yellow-500/20 border border-yellow-500/50 flex items-center justify-center">
-                  <Clock className="w-2 h-2 text-yellow-400" />
-                </div>
-                <span className="text-xs text-slate-400">Late</span>
-              </div>
-              <div className="flex items-center gap-1.5">
-                <div className="w-3 h-3 rounded bg-blue-500/20 border border-blue-500/50 flex items-center justify-center">
-                  <AlertCircle className="w-2 h-2 text-blue-400" />
-                </div>
-                <span className="text-xs text-slate-400">Excused</span>
               </div>
             </div>
           </div>

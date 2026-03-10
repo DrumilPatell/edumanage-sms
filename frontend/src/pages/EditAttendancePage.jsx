@@ -227,8 +227,6 @@ const EditAttendancePage = () => {
                 >
                   <option value="present">Present</option>
                   <option value="absent">Absent</option>
-                  <option value="late">Late</option>
-                  <option value="excused">Excused</option>
                 </select>
               </div>
             </div>
