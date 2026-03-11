@@ -178,7 +178,7 @@ export default function StudentDashboard() {
         </div>
 
         {/* Attendance Summary */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
+        <div className="grid grid-cols-2 gap-3 mb-4">
           <div className="p-3 bg-green-500/10 border border-green-500/20 rounded-lg text-center">
             <p className="text-2xl font-bold text-green-400">{attendanceStats.present}</p>
             <p className="text-xs text-green-300/70">Present</p>
@@ -186,14 +186,6 @@ export default function StudentDashboard() {
           <div className="p-3 bg-red-500/10 border border-red-500/20 rounded-lg text-center">
             <p className="text-2xl font-bold text-red-400">{attendanceStats.absent}</p>
             <p className="text-xs text-red-300/70">Absent</p>
-          </div>
-          <div className="p-3 bg-yellow-500/10 border border-yellow-500/20 rounded-lg text-center">
-            <p className="text-2xl font-bold text-yellow-400">{attendanceStats.late}</p>
-            <p className="text-xs text-yellow-300/70">Late</p>
-          </div>
-          <div className="p-3 bg-blue-500/10 border border-blue-500/20 rounded-lg text-center">
-            <p className="text-2xl font-bold text-blue-400">{attendanceStats.excused}</p>
-            <p className="text-xs text-blue-300/70">Excused</p>
           </div>
         </div>
 
