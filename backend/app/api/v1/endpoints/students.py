@@ -141,7 +141,10 @@ async def create_student_with_user(
             date_of_birth=student.date_of_birth,
             phone=student.phone,
             address=student.address,
+            gender=student.gender,
+            enrollment_date=student.enrollment_date,
             enrollment_year=student.enrollment_year,
+            year_level=student.year_level,
             program=student.program,
             current_semester=student.current_semester,
             status=student.status or "active"
@@ -175,7 +178,10 @@ async def create_student_with_user(
         date_of_birth=student.date_of_birth,
         phone=student.phone,
         address=student.address,
+        gender=student.gender,
+        enrollment_date=student.enrollment_date,
         enrollment_year=student.enrollment_year,
+        year_level=student.year_level,
         program=student.program,
         current_semester=student.current_semester,
         status=student.status or "active"

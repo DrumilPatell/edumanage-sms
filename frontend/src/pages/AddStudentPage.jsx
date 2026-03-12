@@ -80,10 +80,14 @@ const AddStudentPage = () => {
         password: data.password || 'Student@123',
         phone: data.phone || null,
         date_of_birth: data.date_of_birth || null,
+        gender: data.gender || null,
         address: data.address || null,
+        enrollment_date: data.enrollment_date || null,
         enrollment_year: data.enrollment_date ? new Date(data.enrollment_date).getFullYear() : null,
         program: data.program || null,
-        current_semester: data.current_semester || null
+        year_level: data.year_level ? parseInt(data.year_level) : null,
+        current_semester: data.current_semester || null,
+        status: 'active'
       };
       
       return await studentsApi.createStudentWithUser(studentData);

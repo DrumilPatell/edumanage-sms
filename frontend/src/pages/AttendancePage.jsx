@@ -29,17 +29,17 @@ export default function AttendancePage() {
 
   const { data: students = [], isLoading: loadingStudents } = useQuery({
     queryKey: ['students'],
-    queryFn: () => studentsApi.getAll({ limit: 100 }),
+    queryFn: () => studentsApi.getStudents({ limit: 100 }),
   })
 
   const { data: courses = [], isLoading: loadingCourses } = useQuery({
     queryKey: ['courses'],
-    queryFn: () => coursesApi.getAll({ limit: 100 }),
+    queryFn: () => coursesApi.getCourses({ limit: 100 }),
   })
 
   const { data: enrollments = [] } = useQuery({
     queryKey: ['enrollments'],
-    queryFn: () => enrollmentsApi.getAll({ limit: 1000 }),
+    queryFn: () => enrollmentsApi.getEnrollments({ limit: 1000 }),
   })
 
   // Get students enrolled in selected course

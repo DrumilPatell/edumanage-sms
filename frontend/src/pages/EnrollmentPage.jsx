@@ -34,7 +34,10 @@ const EnrollmentPage = () => {
   const fetchStudents = async () => {
     try {
       const response = await api.get('/students/');
-      setStudents(response.data);
+      const sorted = [...response.data].sort((a, b) =>
+        (a.student_id || '').localeCompare(b.student_id || '', undefined, { numeric: true, sensitivity: 'base' })
+      );
+      setStudents(sorted);
     } catch (err) {
       console.error('Failed to fetch students:', err);
     }

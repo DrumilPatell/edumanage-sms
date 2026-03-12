@@ -45,7 +45,9 @@ const EditGradePage = () => {
         api.get('/enrollments/?limit=1000')
       ]);
       setAllCourses(coursesRes.data);
-      setStudents(studentsRes.data);
+      setStudents([...studentsRes.data].sort((a, b) =>
+        (a.student_id || '').localeCompare(b.student_id || '', undefined, { numeric: true, sensitivity: 'base' })
+      ));
       setEnrollmentData(enrollmentsRes.data);
       
       const grade = gradeRes.data;

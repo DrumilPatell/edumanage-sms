@@ -43,7 +43,10 @@ const MarkAttendancePage = () => {
     setFetchingStudents(true);
     try {
       const response = await api.get('/students/', { params: { limit: 1000 } });
-      setStudents(response.data);
+      const sorted = [...response.data].sort((a, b) =>
+        (a.student_id || '').localeCompare(b.student_id || '', undefined, { numeric: true, sensitivity: 'base' })
+      );
+      setStudents(sorted);
     } catch (err) {
       console.error('Failed to fetch students:', err);
       setError('Failed to load students');
@@ -95,8 +98,7 @@ const MarkAttendancePage = () => {
       response.data.forEach(record => {
         existing[record.date] = record.status;
       });
-      // Merge with existing data instead of replacing to preserve data from other months
-      setExistingAttendance(prev => ({ ...prev, ...existing }));
+      setExistingAttendance(existing);
     } catch (err) {
       console.error('Failed to fetch existing attendance:', err);
     }
@@ -350,6 +352,7 @@ const MarkAttendancePage = () => {
                           onClick={() => {
                             setSelectedCourse(course);
                             setAttendanceRecords({});
+                            setExistingAttendance({});
                             // Navigate to enrollment month if current month is before it
                             if (course.enrollment_date) {
                               const enrollmentDate = new Date(course.enrollment_date);

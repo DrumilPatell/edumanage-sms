@@ -59,7 +59,9 @@ const GradePage = () => {
         api.get('/students/')
       ]);
       setAllCourses(coursesRes.data);
-      setStudents(studentsRes.data);
+      setStudents([...studentsRes.data].sort((a, b) =>
+        (a.student_id || '').localeCompare(b.student_id || '', undefined, { numeric: true, sensitivity: 'base' })
+      ));
     } catch (err) {
       console.error('Failed to fetch data:', err);
     } finally {

@@ -39,10 +39,15 @@ export const usersApi = {
   },
 }
 
+const sortStudents = (students) =>
+  [...students].sort((a, b) =>
+    (a.student_id || '').localeCompare(b.student_id || '', undefined, { numeric: true, sensitivity: 'base' })
+  );
+
 export const studentsApi = {
   getStudents: async (params) => {
     const response = await api.get('/students/', { params })
-    return response.data
+    return sortStudents(response.data)
   },
 
   getStudent: async (id) => {
