@@ -223,6 +223,7 @@ export default function LandingPage() {
               </p>
               <Link
                 to="/login"
+                state={{ openRegister: true }}
                 className="inline-block px-10 py-4 bg-white text-amber-600 rounded-xl font-bold text-lg shadow-2xl hover:shadow-3xl transition-all transform hover:scale-105"
               >
                 Start Free Trial
