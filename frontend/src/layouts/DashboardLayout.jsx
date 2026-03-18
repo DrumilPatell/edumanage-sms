@@ -2,7 +2,7 @@ import { Outlet, Link, useNavigate, useLocation } from 'react-router-dom'
 import { useAuthStore } from '../store/authStore'
 import { 
   GraduationCap, Users, BookOpen, UserCheck, 
-  ClipboardList, Award, LayoutDashboard, LogOut, Menu, X 
+  ClipboardList, Award, LayoutDashboard, LogOut, Menu, X, Wallet
 } from 'lucide-react'
 import { useState } from 'react'
 
@@ -32,6 +32,7 @@ export default function DashboardLayout() {
     { name: 'Attendance', href: '/dashboard/attendance', icon: ClipboardList, roles: ['admin', 'faculty'] },
     { name: 'Attendance', href: '/dashboard/my-attendance', icon: ClipboardList, roles: ['student'] },
     { name: 'Grades', href: '/dashboard/grades', icon: Award, roles: ['admin', 'faculty', 'student'] },
+    { name: 'Fees', href: '/dashboard/fees', icon: Wallet, roles: ['admin', 'faculty'] },
   ]
 
   const filteredNavigation = navigation.filter(item => 

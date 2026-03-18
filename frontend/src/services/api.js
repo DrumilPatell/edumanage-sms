@@ -197,6 +197,58 @@ export const academicApi = {
   },
 }
 
+export const feesApi = {
+  getFeeHeads: async (params) => {
+    const response = await api.get('/fees/fee-heads', { params })
+    return response.data
+  },
+
+  createFeeHead: async (data) => {
+    const response = await api.post('/fees/fee-heads', data)
+    return response.data
+  },
+
+  updateFeeHead: async (id, data) => {
+    const response = await api.patch(`/fees/fee-heads/${id}`, data)
+    return response.data
+  },
+
+  deleteFeeHead: async (id) => {
+    const response = await api.delete(`/fees/fee-heads/${id}`)
+    return response.data
+  },
+
+  getInvoices: async (params) => {
+    const response = await api.get('/fees/invoices', { params })
+    return response.data
+  },
+
+  getInvoice: async (id) => {
+    const response = await api.get(`/fees/invoices/${id}`)
+    return response.data
+  },
+
+  createInvoice: async (data) => {
+    const response = await api.post('/fees/invoices', data)
+    return response.data
+  },
+
+  getPayments: async (params) => {
+    const response = await api.get('/fees/payments', { params })
+    return response.data
+  },
+
+  createPayment: async (data) => {
+    const response = await api.post('/fees/payments', data)
+    return response.data
+  },
+
+  getSummary: async () => {
+    const response = await api.get('/fees/summary')
+    return response.data
+  },
+}
+
 export const semestersApi = {
   getSemesters: async () => {
     const response = await api.get('/semesters/')

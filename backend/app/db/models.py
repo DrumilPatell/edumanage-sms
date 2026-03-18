@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, Boolean, DateTime, ForeignKey, Enum, Text, Date, Float
+from sqlalchemy import Column, Integer, String, Boolean, DateTime, ForeignKey, Enum, Text, Date, Float, Numeric
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 from app.db.database import Base
@@ -65,6 +65,8 @@ class Student(Base):
     enrollments = relationship("Enrollment", back_populates="student", cascade="all, delete-orphan")
     attendance_records = relationship("Attendance", back_populates="student", cascade="all, delete-orphan")
     grades = relationship("Grade", back_populates="student", cascade="all, delete-orphan")
+    fee_invoices = relationship("FeeInvoice", back_populates="student", cascade="all, delete-orphan")
+    fee_payments = relationship("FeePayment", back_populates="student", cascade="all, delete-orphan")
 
 
 class Course(Base):
@@ -148,6 +150,85 @@ class Grade(Base):
     
     student = relationship("Student", back_populates="grades")
     course = relationship("Course", back_populates="grades")
+
+
+class FeeHead(Base):
+    __tablename__ = "fee_heads"
+
+    id = Column(Integer, primary_key=True, index=True)
+    code = Column(String(50), unique=True, index=True, nullable=False)
+    name = Column(String(120), nullable=False)
+    description = Column(Text, nullable=True)
+    default_amount = Column(Numeric(12, 2), nullable=False, default=0)
+    is_recurring = Column(Boolean, default=True)
+    is_active = Column(Boolean, default=True)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    updated_at = Column(DateTime(timezone=True), onupdate=func.now())
+
+    invoice_items = relationship("FeeInvoiceItem", back_populates="fee_head")
+
+
+class FeeInvoice(Base):
+    __tablename__ = "fee_invoices"
+
+    id = Column(Integer, primary_key=True, index=True)
+    invoice_no = Column(String(60), unique=True, index=True, nullable=False)
+    student_id = Column(Integer, ForeignKey("students.id", ondelete="CASCADE"), nullable=False)
+    issue_date = Column(Date, nullable=False)
+    due_date = Column(Date, nullable=False)
+
+    subtotal_amount = Column(Numeric(12, 2), nullable=False, default=0)
+    discount_amount = Column(Numeric(12, 2), nullable=False, default=0)
+    late_fee_amount = Column(Numeric(12, 2), nullable=False, default=0)
+    total_amount = Column(Numeric(12, 2), nullable=False, default=0)
+    paid_amount = Column(Numeric(12, 2), nullable=False, default=0)
+    balance_amount = Column(Numeric(12, 2), nullable=False, default=0)
+
+    status = Column(String(20), nullable=False, default="issued")
+    notes = Column(Text, nullable=True)
+    created_by = Column(Integer, ForeignKey("users.id", ondelete="SET NULL"), nullable=True)
+
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    updated_at = Column(DateTime(timezone=True), onupdate=func.now())
+
+    student = relationship("Student", back_populates="fee_invoices")
+    items = relationship("FeeInvoiceItem", back_populates="invoice", cascade="all, delete-orphan")
+    payments = relationship("FeePayment", back_populates="invoice", cascade="all, delete-orphan")
+
+
+class FeeInvoiceItem(Base):
+    __tablename__ = "fee_invoice_items"
+
+    id = Column(Integer, primary_key=True, index=True)
+    invoice_id = Column(Integer, ForeignKey("fee_invoices.id", ondelete="CASCADE"), nullable=False)
+    fee_head_id = Column(Integer, ForeignKey("fee_heads.id", ondelete="SET NULL"), nullable=True)
+    description = Column(String(255), nullable=False)
+    amount = Column(Numeric(12, 2), nullable=False, default=0)
+
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+
+    invoice = relationship("FeeInvoice", back_populates="items")
+    fee_head = relationship("FeeHead", back_populates="invoice_items")
+
+
+class FeePayment(Base):
+    __tablename__ = "fee_payments"
+
+    id = Column(Integer, primary_key=True, index=True)
+    payment_no = Column(String(60), unique=True, index=True, nullable=False)
+    invoice_id = Column(Integer, ForeignKey("fee_invoices.id", ondelete="CASCADE"), nullable=False)
+    student_id = Column(Integer, ForeignKey("students.id", ondelete="CASCADE"), nullable=False)
+    payment_date = Column(Date, nullable=False)
+    amount = Column(Numeric(12, 2), nullable=False)
+    mode = Column(String(30), nullable=False)
+    reference_no = Column(String(100), nullable=True)
+    notes = Column(Text, nullable=True)
+    received_by = Column(Integer, ForeignKey("users.id", ondelete="SET NULL"), nullable=True)
+    status = Column(String(20), nullable=False, default="posted")
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+
+    invoice = relationship("FeeInvoice", back_populates="payments")
+    student = relationship("Student", back_populates="fee_payments")
 
 
 class Semester(Base):

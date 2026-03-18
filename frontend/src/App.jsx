@@ -46,6 +46,7 @@ import EditAttendancePage from './pages/EditAttendancePage'
 import EditGradePage from './pages/EditGradePage'
 import ForgotPasswordPage from './pages/ForgotPasswordPage'
 import StudentAttendancePage from './pages/StudentAttendancePage'
+import FeesPage from './pages/FeesPage'
 
 function PrivateRoute({ children, allowedRoles }) {
   const { user, isAuthenticated } = useAuthStore()
@@ -148,6 +149,12 @@ function App() {
           <Route path="grades" element={
             <PrivateRoute allowedRoles={['admin', 'faculty', 'student']}>
               <GradesPage />
+            </PrivateRoute>
+          } />
+
+          <Route path="fees" element={
+            <PrivateRoute allowedRoles={['admin', 'faculty']}>
+              <FeesPage />
             </PrivateRoute>
           } />
         </Route>
