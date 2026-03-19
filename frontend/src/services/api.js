@@ -198,48 +198,33 @@ export const academicApi = {
 }
 
 export const feesApi = {
-  getFeeHeads: async (params) => {
-    const response = await api.get('/fees/fee-heads', { params })
+  getStudentCourses: async (studentId) => {
+    const response = await api.get(`/fees/student-courses/${studentId}`)
     return response.data
   },
 
-  createFeeHead: async (data) => {
-    const response = await api.post('/fees/fee-heads', data)
+  getRecords: async (params) => {
+    const response = await api.get('/fees/records', { params })
     return response.data
   },
 
-  updateFeeHead: async (id, data) => {
-    const response = await api.patch(`/fees/fee-heads/${id}`, data)
+  createRecord: async (data) => {
+    const response = await api.post('/fees/records', data)
     return response.data
   },
 
-  deleteFeeHead: async (id) => {
-    const response = await api.delete(`/fees/fee-heads/${id}`)
+  updateRecord: async (id, data) => {
+    const response = await api.patch(`/fees/records/${id}`, data)
     return response.data
   },
 
-  getInvoices: async (params) => {
-    const response = await api.get('/fees/invoices', { params })
+  addPayment: async (recordId, data) => {
+    const response = await api.post(`/fees/records/${recordId}/payments`, data)
     return response.data
   },
 
-  getInvoice: async (id) => {
-    const response = await api.get(`/fees/invoices/${id}`)
-    return response.data
-  },
-
-  createInvoice: async (data) => {
-    const response = await api.post('/fees/invoices', data)
-    return response.data
-  },
-
-  getPayments: async (params) => {
-    const response = await api.get('/fees/payments', { params })
-    return response.data
-  },
-
-  createPayment: async (data) => {
-    const response = await api.post('/fees/payments', data)
+  getMyRecords: async () => {
+    const response = await api.get('/fees/my-records')
     return response.data
   },
 

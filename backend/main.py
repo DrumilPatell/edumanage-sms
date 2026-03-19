@@ -1,6 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import Response
+from sqlalchemy import inspect, text
 from app.core.config import settings
 from app.api.v1.router import api_router
 from app.db.database import engine
@@ -10,6 +11,35 @@ import logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
+
+def drop_legacy_fee_tables() -> None:
+    """Remove old fee-module tables that are no longer used by the new logic."""
+    legacy_tables = [
+        "fee_invoice_items",
+        "fee_payments",
+        "fee_invoices",
+        "fee_heads",
+    ]
+
+    inspector = inspect(engine)
+    existing_tables = set(inspector.get_table_names())
+    tables_to_drop = [name for name in legacy_tables if name in existing_tables]
+
+    if not tables_to_drop:
+        return
+
+    dialect = engine.dialect.name
+    with engine.begin() as conn:
+        for table_name in tables_to_drop:
+            if dialect == "postgresql":
+                conn.execute(text(f'DROP TABLE IF EXISTS "{table_name}" CASCADE'))
+            else:
+                conn.execute(text(f"DROP TABLE IF EXISTS {table_name}"))
+
+    logger.info("Dropped legacy fee tables: %s", ", ".join(tables_to_drop))
+
+
+drop_legacy_fee_tables()
 models.Base.metadata.create_all(bind=engine)
 
 def check_oauth_config():

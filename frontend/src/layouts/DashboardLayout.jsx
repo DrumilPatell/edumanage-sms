@@ -32,7 +32,8 @@ export default function DashboardLayout() {
     { name: 'Attendance', href: '/dashboard/attendance', icon: ClipboardList, roles: ['admin', 'faculty'] },
     { name: 'Attendance', href: '/dashboard/my-attendance', icon: ClipboardList, roles: ['student'] },
     { name: 'Grades', href: '/dashboard/grades', icon: Award, roles: ['admin', 'faculty', 'student'] },
-    { name: 'Fees', href: '/dashboard/fees', icon: Wallet, roles: ['admin', 'faculty'] },
+    { name: 'Fees', href: '/dashboard/fees', icon: Wallet, roles: ['admin'] },
+    { name: 'My Fees', href: '/dashboard/my-fees', icon: Wallet, roles: ['student'] },
   ]
 
   const filteredNavigation = navigation.filter(item => 

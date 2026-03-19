@@ -47,15 +47,20 @@ import EditGradePage from './pages/EditGradePage'
 import ForgotPasswordPage from './pages/ForgotPasswordPage'
 import StudentAttendancePage from './pages/StudentAttendancePage'
 import FeesPage from './pages/FeesPage'
+import CreateFeeRecordPage from './pages/CreateFeeRecordPage'
 
 function PrivateRoute({ children, allowedRoles }) {
   const { user, isAuthenticated } = useAuthStore()
+
+  const normalizedRole = typeof user?.role === 'string'
+    ? user.role.toLowerCase().replace('roleenum.', '')
+    : ''
 
   if (!isAuthenticated) {
     return <Navigate to="/login" replace />
   }
 
-  if (allowedRoles && !allowedRoles.includes(user?.role)) {
+  if (allowedRoles && !allowedRoles.includes(normalizedRole)) {
     return <Navigate to="/unauthorized" replace />
   }
 
@@ -153,7 +158,13 @@ function App() {
           } />
 
           <Route path="fees" element={
-            <PrivateRoute allowedRoles={['admin', 'faculty']}>
+            <PrivateRoute allowedRoles={['admin']}>
+              <FeesPage />
+            </PrivateRoute>
+          } />
+
+          <Route path="my-fees" element={
+            <PrivateRoute allowedRoles={['student']}>
               <FeesPage />
             </PrivateRoute>
           } />
@@ -229,6 +240,12 @@ function App() {
         <Route path="/edit-attendance/:id" element={
           <PrivateRoute allowedRoles={['admin', 'faculty']}>
             <EditAttendancePage />
+          </PrivateRoute>
+        } />
+
+        <Route path="/create-fee-record" element={
+          <PrivateRoute allowedRoles={['admin']}>
+            <CreateFeeRecordPage />
           </PrivateRoute>
         } />
 
