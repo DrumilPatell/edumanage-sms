@@ -299,6 +299,23 @@ async def update_fee_record(
     return _record_to_response(record)
 
 
+@router.delete("/records/{record_id}", status_code=status.HTTP_204_NO_CONTENT)
+async def delete_fee_record(
+    record_id: int,
+    db: Session = Depends(get_db),
+    _current_user: User = Depends(require_admin),
+):
+    record = db.query(StudentCourseFee).filter(StudentCourseFee.id == record_id).first()
+    if not record:
+        raise HTTPException(status_code=404, detail="Fee record not found")
+
+    # Delete associated payments first
+    db.query(StudentCourseFeePayment).filter(StudentCourseFeePayment.fee_record_id == record_id).delete()
+    db.delete(record)
+    db.commit()
+    return None
+
+
 @router.post("/records/{record_id}/payments", response_model=FeeRecordPaymentResponse, status_code=status.HTTP_201_CREATED)
 async def add_fee_payment(
     record_id: int,

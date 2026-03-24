@@ -218,6 +218,10 @@ export const feesApi = {
     return response.data
   },
 
+  deleteRecord: async (id) => {
+    await api.delete(`/fees/records/${id}`)
+  },
+
   addPayment: async (recordId, data) => {
     const response = await api.post(`/fees/records/${recordId}/payments`, data)
     return response.data

@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useNavigate } from 'react-router-dom'
-import { CreditCard, Edit, Plus, Wallet, X } from 'lucide-react'
+import { CreditCard, Edit, Plus, Trash2, Wallet, X } from 'lucide-react'
 import { feesApi } from '../services/api'
 import { useAuthStore } from '../store/authStore'
 
@@ -18,6 +18,7 @@ export default function FeesPage() {
   const isStudent = normalizedRole === 'student'
 
   const [paymentModal, setPaymentModal] = useState({ open: false, record: null })
+  const [deleteModal, setDeleteModal] = useState({ open: false, record: null })
   const [paymentForm, setPaymentForm] = useState({
     payment_date: todayDate(),
     amount: '',
@@ -58,6 +59,15 @@ export default function FeesPage() {
         reference_no: '',
         notes: '',
       })
+    },
+  })
+
+  const deleteMutation = useMutation({
+    mutationFn: (id) => feesApi.deleteRecord(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries(['fee-records'])
+      queryClient.invalidateQueries(['fee-summary'])
+      setDeleteModal({ open: false, record: null })
     },
   })
 
@@ -246,6 +256,13 @@ export default function FeesPage() {
                             <Wallet className="w-4 h-4" />
                           </button>
                         )}
+                        <button
+                          onClick={() => setDeleteModal({ open: true, record })}
+                          className="p-2 text-red-400 hover:text-red-300 hover:bg-red-500/10 rounded-lg"
+                          title="Delete fee record"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
                       </div>
                     </td>
                   </tr>
@@ -318,9 +335,46 @@ export default function FeesPage() {
         </div>
       )}
 
-      {paymentMutation.error && (
+      {deleteModal.open && (
+        <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4">
+          <div className="w-full max-w-md bg-slate-800 rounded-2xl border border-slate-700 p-6 space-y-4">
+            <div className="flex items-center justify-between">
+              <h3 className="text-xl font-bold text-white">Delete Fee Record</h3>
+              <button type="button" onClick={() => setDeleteModal({ open: false, record: null })} className="p-2 text-slate-400 hover:text-white">
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <div className="text-slate-300">
+              <p>Are you sure you want to delete the fee record for:</p>
+              <div className="bg-slate-700/40 border border-slate-600/60 rounded-lg p-3 mt-3 text-sm">
+                <p className="text-white font-medium">{deleteModal.record?.student_name}</p>
+                <p className="text-slate-400">{deleteModal.record?.course_name} ({deleteModal.record?.course_code})</p>
+                <p className="text-amber-300 mt-1">Amount: {formatCurrency(deleteModal.record?.total_amount)}</p>
+              </div>
+              <p className="text-red-400 text-sm mt-3">This will also delete all associated payments. This action cannot be undone.</p>
+            </div>
+
+            <div className="flex justify-end gap-2 pt-2">
+              <button type="button" onClick={() => setDeleteModal({ open: false, record: null })} className="btn-secondary">Cancel</button>
+              <button
+                type="button"
+                onClick={() => deleteMutation.mutate(deleteModal.record?.id)}
+                className="btn-primary bg-red-600 hover:bg-red-700"
+                disabled={deleteMutation.isPending}
+              >
+                <Trash2 className="w-4 h-4 mr-1" />
+                {deleteMutation.isPending ? 'Deleting...' : 'Delete'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {(paymentMutation.error || deleteMutation.error) && (
         <div className="card border-red-500/40 bg-red-500/10 text-red-300 text-sm">
           {paymentMutation.error?.response?.data?.detail ||
+            deleteMutation.error?.response?.data?.detail ||
             'Something went wrong while saving fee details.'}
         </div>
       )}
