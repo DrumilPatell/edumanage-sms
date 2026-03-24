@@ -337,34 +337,65 @@ export default function FeesPage() {
 
       {deleteModal.open && (
         <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4">
-          <div className="w-full max-w-md bg-slate-800 rounded-2xl border border-slate-700 p-6 space-y-4">
-            <div className="flex items-center justify-between">
+          <div className="w-full max-w-lg bg-slate-800/95 backdrop-blur rounded-2xl border border-slate-700/50 shadow-xl">
+            <div className="flex items-center justify-between p-5 border-b border-slate-700/50">
               <h3 className="text-xl font-bold text-white">Delete Fee Record</h3>
-              <button type="button" onClick={() => setDeleteModal({ open: false, record: null })} className="p-2 text-slate-400 hover:text-white">
+              <button type="button" onClick={() => setDeleteModal({ open: false, record: null })} className="btn-secondary !p-2">
                 <X className="w-4 h-4" />
               </button>
             </div>
 
-            <div className="text-slate-300">
-              <p>Are you sure you want to delete the fee record for:</p>
-              <div className="bg-slate-700/40 border border-slate-600/60 rounded-lg p-3 mt-3 text-sm">
-                <p className="text-white font-medium">{deleteModal.record?.student_name}</p>
-                <p className="text-slate-400">{deleteModal.record?.course_name} ({deleteModal.record?.course_code})</p>
-                <p className="text-amber-300 mt-1">Amount: {formatCurrency(deleteModal.record?.total_amount)}</p>
+            <div className="p-5 space-y-4">
+              <p className="text-slate-300">Are you sure you want to delete the fee record for:</p>
+              
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-medium text-slate-400 mb-1.5">Student</label>
+                  <div className="input-field bg-slate-700/40 cursor-default">
+                    {deleteModal.record?.student_name}
+                  </div>
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-slate-400 mb-1.5">Course</label>
+                  <div className="input-field bg-slate-700/40 cursor-default">
+                    {deleteModal.record?.course_code}
+                  </div>
+                </div>
               </div>
-              <p className="text-red-400 text-sm mt-3">This will also delete all associated payments. This action cannot be undone.</p>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-medium text-slate-400 mb-1.5">Total Amount</label>
+                  <div className="input-field bg-slate-700/40 cursor-default text-amber-300">
+                    {formatCurrency(deleteModal.record?.total_amount)}
+                  </div>
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-slate-400 mb-1.5">Status</label>
+                  <div className="input-field bg-slate-700/40 cursor-default">
+                    <span className={`badge ${statusBadge(deleteModal.record?.status)}`}>{deleteModal.record?.status}</span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="bg-red-500/10 border border-red-500/30 rounded-xl p-3">
+                <p className="text-red-400 text-sm">⚠️ This will permanently delete this fee record and all associated payments. This action cannot be undone.</p>
+              </div>
             </div>
 
-            <div className="flex justify-end gap-2 pt-2">
-              <button type="button" onClick={() => setDeleteModal({ open: false, record: null })} className="btn-secondary">Cancel</button>
+            <div className="flex justify-end gap-2 p-5 border-t border-slate-700/50">
+              <button type="button" onClick={() => setDeleteModal({ open: false, record: null })} className="btn-secondary">
+                <X className="w-4 h-4 mr-1" />
+                Cancel
+              </button>
               <button
                 type="button"
                 onClick={() => deleteMutation.mutate(deleteModal.record?.id)}
-                className="btn-primary bg-red-600 hover:bg-red-700"
+                className="btn-primary !bg-red-600 hover:!bg-red-700"
                 disabled={deleteMutation.isPending}
               >
                 <Trash2 className="w-4 h-4 mr-1" />
-                {deleteMutation.isPending ? 'Deleting...' : 'Delete'}
+                {deleteMutation.isPending ? 'Deleting...' : 'Delete Record'}
               </button>
             </div>
           </div>
