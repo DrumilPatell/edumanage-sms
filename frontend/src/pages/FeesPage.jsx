@@ -143,10 +143,9 @@ export default function FeesPage() {
               <thead className="border-b border-slate-700/50">
                 <tr>
                   <th className="text-left py-3 px-3 text-slate-300 font-semibold">Course</th>
+                  <th className="text-left py-3 px-3 text-slate-300 font-semibold">Issue Date</th>
                   <th className="text-left py-3 px-3 text-slate-300 font-semibold">Due Date</th>
                   <th className="text-left py-3 px-3 text-slate-300 font-semibold">Total</th>
-                  <th className="text-left py-3 px-3 text-slate-300 font-semibold">Paid</th>
-                  <th className="text-left py-3 px-3 text-slate-300 font-semibold">Balance</th>
                   <th className="text-left py-3 px-3 text-slate-300 font-semibold">Status</th>
                 </tr>
               </thead>
@@ -157,10 +156,9 @@ export default function FeesPage() {
                       <p className="font-medium text-white">{record.course_name}</p>
                       <p className="text-xs text-slate-400">{record.course_code}</p>
                     </td>
+                    <td className="py-3 px-3 text-slate-300">{new Date(record.issue_date).toLocaleDateString('en-GB')}</td>
                     <td className="py-3 px-3 text-slate-300">{new Date(record.due_date).toLocaleDateString('en-GB')}</td>
                     <td className="py-3 px-3 text-slate-300">{formatCurrency(record.total_amount)}</td>
-                    <td className="py-3 px-3 text-emerald-400">{formatCurrency(record.paid_amount)}</td>
-                    <td className="py-3 px-3 text-amber-300">{formatCurrency(record.balance_amount)}</td>
                     <td className="py-3 px-3">
                       <span className={`badge ${statusBadge(record.status)}`}>{record.status}</span>
                     </td>
