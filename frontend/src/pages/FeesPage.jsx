@@ -318,7 +318,7 @@ export default function FeesPage() {
         </div>
       )}
 
-      {(createMutation.error || updateMutation.error || paymentMutation.error) && (
+      {paymentMutation.error && (
         <div className="card border-red-500/40 bg-red-500/10 text-red-300 text-sm">
           {paymentMutation.error?.response?.data?.detail ||
             'Something went wrong while saving fee details.'}
