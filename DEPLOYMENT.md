@@ -122,6 +122,11 @@ Update redirect URIs in respective developer consoles.
 - Verify DATABASE_URL is correct
 - Ensure all required env variables are set
 
+### Render build fails with "Could not fetch Python version"
+- Update `backend/runtime.txt` to a currently available patch version (example: `python-3.11.11`)
+- Commit and push the change, then trigger **Manual Deploy** in Render
+- Avoid pinning to very old patch versions because they may be removed from the build image catalog
+
 ### CORS errors
 - Verify FRONTEND_URL in Render matches your Vercel URL exactly
 - No trailing slash in URLs
