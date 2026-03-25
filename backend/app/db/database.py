@@ -12,6 +12,12 @@ logger = logging.getLogger(__name__)
 def _build_engine():
     database_url = settings.DATABASE_URL or "sqlite:///./edumanage_dev.db"
 
+    # Render usually provides postgresql:// URLs; map them to pg8000 since that is the installed driver.
+    if database_url.startswith("postgresql://") and "+" not in database_url.split("://", 1)[0]:
+        database_url = database_url.replace("postgresql://", "postgresql+pg8000://", 1)
+    elif database_url.startswith("postgres://"):
+        database_url = database_url.replace("postgres://", "postgresql+pg8000://", 1)
+
     # SQLite path works without external services and is useful as a safe local fallback.
     if database_url.startswith("sqlite"):
         return create_engine(database_url, connect_args={"check_same_thread": False})
