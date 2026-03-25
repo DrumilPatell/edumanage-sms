@@ -1,4 +1,3 @@
-from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from datetime import date, datetime, timedelta
 import sys
@@ -7,9 +6,8 @@ import os
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
 from app.db.models import Base, User, Student, Course, Enrollment, Attendance, Grade, RoleEnum
-from app.core.config import settings
+from app.db.database import engine
 
-engine = create_engine(settings.DATABASE_URL)
 SessionLocal = sessionmaker(bind=engine)
 
 def init_db():

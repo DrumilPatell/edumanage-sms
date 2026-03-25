@@ -10,7 +10,8 @@ logger = logging.getLogger(__name__)
 
 
 def _build_engine():
-    database_url = settings.DATABASE_URL or "sqlite:///./edumanage_dev.db"
+    configured_database_url = settings.DATABASE_URL
+    database_url = configured_database_url or "sqlite:///./edumanage_dev.db"
 
     # Render usually provides postgresql:// URLs; map them to pg8000 since that is the installed driver.
     if database_url.startswith("postgresql://") and "+" not in database_url.split("://", 1)[0]:
@@ -33,8 +34,12 @@ def _build_engine():
             conn.execute(text("SELECT 1"))
         return primary_engine
     except Exception as exc:
-        fallback_url = "sqlite:///./edumanage_dev.db"
         logger.error("Primary database connection failed: %s", exc)
+        if configured_database_url:
+            # If a DB URL is explicitly configured (production), fail fast instead of silently using SQLite.
+            raise
+
+        fallback_url = "sqlite:///./edumanage_dev.db"
         logger.warning("Falling back to local SQLite database: %s", fallback_url)
         return create_engine(fallback_url, connect_args={"check_same_thread": False})
 
