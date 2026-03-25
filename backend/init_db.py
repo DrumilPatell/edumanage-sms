@@ -19,8 +19,9 @@ def init_db():
     db = SessionLocal()
     
     try:
-        if db.query(User).count() > 0:
-            print("Database already contains data. Skipping initialization.")
+        # Allow seeding when only auth users exist but core academic tables are still empty.
+        if db.query(Student).count() > 0 or db.query(Course).count() > 0:
+            print("Database already contains academic data. Skipping initialization.")
             return
         
         print("\nCreating sample data...")
