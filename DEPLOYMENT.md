@@ -25,7 +25,7 @@ Your repo should keep these deployment files:
 
 Current required runtime in `backend/runtime.txt`:
 ```txt
-python-3.11
+python-3.12
 ```
 
 ## 3. Push Latest Code to GitHub
@@ -111,8 +111,8 @@ Google example:
 ## 8. Common Failures and Fixes
 
 ### "Could not fetch Python version"
-- Ensure `backend/runtime.txt` is `python-3.11`.
-- Ensure `backend/.python-version` is `3.11` (this file can override runtime settings on some platforms).
+- Ensure `backend/runtime.txt` is `python-3.12`.
+- Ensure `backend/.python-version` is `3.12` (this file can override runtime settings on some platforms).
 - Push change and redeploy.
 
 ### CORS error in browser
