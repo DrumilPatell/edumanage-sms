@@ -43,6 +43,9 @@ class Settings(BaseSettings):
     ADMIN_EMAILS: str = ""
     FACULTY_EMAILS: str = ""
     STUDENT_EMAILS: str = ""
+
+    # Startup seeding (useful on platforms without interactive shell)
+    SEED_ON_STARTUP: bool = False
     
     @property
     def admin_emails_list(self) -> List[str]:

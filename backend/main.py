@@ -6,6 +6,7 @@ from app.core.config import settings
 from app.api.v1.router import api_router
 from app.db.database import engine
 from app.db import models
+from init_db import init_db
 import logging
 
 logging.basicConfig(level=logging.INFO)
@@ -74,6 +75,21 @@ def check_oauth_config():
         logger.info(f"✅ OAuth configured for: {', '.join(configured)}")
 
 check_oauth_config()
+
+
+def maybe_seed_on_startup() -> None:
+    if not settings.SEED_ON_STARTUP:
+        return
+
+    try:
+        logger.info("SEED_ON_STARTUP enabled. Running init_db...")
+        init_db()
+        logger.info("Startup seeding complete.")
+    except Exception as exc:
+        logger.exception("Startup seeding failed: %s", exc)
+
+
+maybe_seed_on_startup()
 
 app = FastAPI(
     title="Student Management System API",
