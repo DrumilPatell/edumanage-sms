@@ -112,6 +112,7 @@ Google example:
 
 ### "Could not fetch Python version"
 - Ensure `backend/runtime.txt` is `python-3.11.11`.
+- Ensure `backend/.python-version` is `3.11.11` (this file can override runtime settings on some platforms).
 - Push change and redeploy.
 
 ### CORS error in browser
