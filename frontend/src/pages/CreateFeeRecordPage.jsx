@@ -1,7 +1,7 @@
 import { useRef, useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useLocation, useNavigate } from 'react-router-dom'
-import { CalendarDays, ChevronDown, Save, X } from 'lucide-react'
+import { ArrowLeft, CalendarDays, DollarSign, User, BookOpen, FileText, AlertCircle } from 'lucide-react'
 import { feesApi, studentsApi } from '../services/api'
 
 const todayDate = () => new Date().toISOString().split('T')[0]
@@ -108,166 +108,179 @@ export default function CreateFeeRecordPage() {
     null
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 p-4 sm:p-6">
-      <div className="max-w-5xl mx-auto space-y-5">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-2xl font-bold text-white">{editRecord ? 'Edit Fee Record' : 'Create Fee Record'}</h1>
-            <p className="text-slate-400 mt-1">
-              Select student first, then choose from enrolled courses and enter fee details.
-            </p>
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 py-8 px-4">
+      <button
+        onClick={() => navigate('/dashboard/fees')}
+        className="fixed top-6 left-6 flex items-center gap-2 text-slate-400 hover:text-amber-400 transition-colors z-10"
+      >
+        <ArrowLeft className="w-5 h-5" />
+        <span>Back to Fees</span>
+      </button>
+
+      <div className="max-w-2xl mx-auto">
+        <div className="bg-slate-800 rounded-2xl shadow-2xl p-8 border border-slate-700">
+          <div className="flex items-center gap-3 mb-8">
+            <div className="w-12 h-12 bg-amber-500 rounded-xl flex items-center justify-center">
+              <DollarSign className="w-6 h-6 text-slate-900" />
+            </div>
+            <div>
+              <h1 className="text-3xl font-bold text-white">{editRecord ? 'Edit Fee Record' : 'Create Fee Record'}</h1>
+              <p className="text-slate-400">Select student and enter fee details</p>
+            </div>
           </div>
-          <button
-            type="button"
-            onClick={() => navigate('/dashboard/fees')}
-            className="btn-secondary"
-          >
-            <X className="w-4 h-4 mr-1" />
-            Back
-          </button>
-        </div>
 
-        <div className="card">
-          <form onSubmit={onSubmit} className="space-y-4">
-            <div className="grid md:grid-cols-2 gap-3">
-              <div>
-                <label className="block text-xs font-medium text-slate-300 mb-1.5">Student</label>
-                <div className="relative">
-                  <select
-                    className="input-field appearance-none pr-10"
-                    value={form.student_id}
-                    onChange={(e) => onStudentChange(e.target.value)}
-                    required
-                  >
-                    <option value="">Select Student</option>
-                    {students.map((student) => (
-                      <option key={student.id} value={student.id}>{student.student_id} - {student.full_name}</option>
-                    ))}
-                  </select>
-                  <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-xs font-medium text-slate-300 mb-1.5">Course (Enrolled by Student)</label>
-                <div className="relative">
-                  <select
-                    className="input-field appearance-none pr-10"
-                    value={form.course_id}
-                    onChange={(e) => setForm((prev) => ({ ...prev, course_id: e.target.value }))}
-                    required
-                    disabled={!form.student_id}
-                  >
-                    <option value="">Select Course</option>
-                    {studentCourses.map((course) => (
-                      <option key={course.course_id} value={course.course_id}>{course.course_code} - {course.course_name}</option>
-                    ))}
-                  </select>
-                  <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
-                </div>
-              </div>
+          {mutationError && (
+            <div className="mb-6 p-4 bg-red-500/10 border border-red-500/50 rounded-lg text-red-400 flex items-center gap-2">
+              <AlertCircle className="w-5 h-5" />
+              {mutationError}
             </div>
+          )}
 
-            <div className="grid md:grid-cols-2 gap-3">
-              <div>
-                <label className="block text-xs font-medium text-slate-300 mb-1.5">Issue Date</label>
-                <div className="relative">
-                  <input
-                    ref={issueDateRef}
-                    className="input-field pl-10"
-                    type="date"
-                    value={form.issue_date}
-                    onChange={(e) => setForm((prev) => ({ ...prev, issue_date: e.target.value }))}
-                    required
-                  />
-                  <button
-                    type="button"
-                    onClick={() => openPicker(issueDateRef)}
-                    className="absolute left-2 top-1/2 -translate-y-1/2 p-1.5 text-slate-400 hover:text-amber-400 transition-colors"
-                    aria-label="Open issue date picker"
-                  >
-                    <CalendarDays className="w-4 h-4" />
-                  </button>
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-xs font-medium text-slate-300 mb-1.5">Due Date</label>
-                <div className="relative">
-                  <input
-                    ref={dueDateRef}
-                    className="input-field pl-10"
-                    type="date"
-                    value={form.due_date}
-                    onChange={(e) => setForm((prev) => ({ ...prev, due_date: e.target.value }))}
-                    required
-                  />
-                  <button
-                    type="button"
-                    onClick={() => openPicker(dueDateRef)}
-                    className="absolute left-2 top-1/2 -translate-y-1/2 p-1.5 text-slate-400 hover:text-amber-400 transition-colors"
-                    aria-label="Open due date picker"
-                  >
-                    <CalendarDays className="w-4 h-4" />
-                  </button>
-                </div>
-              </div>
+          {(createMutation.isSuccess || updateMutation.isSuccess) && (
+            <div className="mb-6 p-4 bg-green-500/10 border border-green-500/50 rounded-lg text-green-400">
+              Fee record {editRecord ? 'updated' : 'created'} successfully!
             </div>
+          )}
 
-            <div className="grid md:grid-cols-2 gap-3">
-              <div>
-                <label className="block text-xs font-medium text-slate-300 mb-1.5">Course Fee Amount</label>
-                <input
-                  className="input-field"
-                  type="number"
-                  min="0"
-                  step="0.01"
-                  placeholder="Enter fee amount"
-                  value={form.fee_amount}
-                  onChange={(e) => setForm((prev) => ({ ...prev, fee_amount: e.target.value }))}
+          <form onSubmit={onSubmit} className="space-y-6">
+            <div>
+              <label className="block text-sm font-medium text-slate-300 mb-2">Student</label>
+              <div className="relative">
+                <User className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
+                <select
+                  className="w-full pl-11 pr-10 py-3 bg-slate-700 border border-slate-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent appearance-none cursor-pointer"
+                  value={form.student_id}
+                  onChange={(e) => onStudentChange(e.target.value)}
                   required
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-medium text-slate-300 mb-1.5">Late Fee Amount</label>
-                <input
-                  className="input-field"
-                  type="number"
-                  min="0"
-                  step="0.01"
-                  placeholder="Enter late fee amount"
-                  value={form.late_fee_amount}
-                  onChange={(e) => setForm((prev) => ({ ...prev, late_fee_amount: e.target.value }))}
-                />
-                <p className="text-xs text-slate-500 mt-1">Late fee will be applied only after due date if the fee is unpaid.</p>
+                >
+                  <option value="">Select Student</option>
+                  {students.map((student) => (
+                    <option key={student.id} value={student.id}>{student.student_id} - {student.full_name}</option>
+                  ))}
+                </select>
+                <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none">
+                  <svg className="w-5 h-5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
+                  </svg>
+                </div>
               </div>
             </div>
 
             <div>
-              <label className="block text-xs font-medium text-slate-300 mb-1.5">Notes</label>
-              <textarea
-                className="input-field h-24"
-                placeholder="Optional notes for this fee record"
-                value={form.notes}
-                onChange={(e) => setForm((prev) => ({ ...prev, notes: e.target.value }))}
-              />
+              <label className="block text-sm font-medium text-slate-300 mb-2">Course (Enrolled by Student)</label>
+              <div className="relative">
+                <BookOpen className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
+                <select
+                  className="w-full pl-11 pr-10 py-3 bg-slate-700 border border-slate-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent appearance-none cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                  value={form.course_id}
+                  onChange={(e) => setForm((prev) => ({ ...prev, course_id: e.target.value }))}
+                  required
+                  disabled={!form.student_id}
+                >
+                  <option value="">Select Course</option>
+                  {studentCourses.map((course) => (
+                    <option key={course.course_id} value={course.course_id}>{course.course_code} - {course.course_name}</option>
+                  ))}
+                </select>
+                <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none">
+                  <svg className="w-5 h-5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
+                  </svg>
+                </div>
+              </div>
             </div>
 
-            <div className="flex justify-end">
-              <button type="submit" className="btn-primary" disabled={createMutation.isPending || updateMutation.isPending}>
-                <Save className="w-4 h-4 mr-1" />
-                {createMutation.isPending || updateMutation.isPending ? 'Saving...' : editRecord ? 'Update Fee' : 'Create Fee'}
-              </button>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-slate-300 mb-2">Issue Date</label>
+                <div className="relative">
+                  <CalendarDays className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
+                  <input
+                    ref={issueDateRef}
+                    type="date"
+                    className="w-full pl-11 pr-4 py-3 bg-slate-700 border border-slate-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent"
+                    value={form.issue_date}
+                    onChange={(e) => setForm((prev) => ({ ...prev, issue_date: e.target.value }))}
+                    required
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-slate-300 mb-2">Due Date</label>
+                <div className="relative">
+                  <CalendarDays className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
+                  <input
+                    ref={dueDateRef}
+                    type="date"
+                    className="w-full pl-11 pr-4 py-3 bg-slate-700 border border-slate-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent"
+                    value={form.due_date}
+                    onChange={(e) => setForm((prev) => ({ ...prev, due_date: e.target.value }))}
+                    required
+                  />
+                </div>
+              </div>
             </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-slate-300 mb-2">Course Fee Amount</label>
+                <div className="relative">
+                  <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
+                  <input
+                    type="number"
+                    min="0"
+                    step="0.01"
+                    className="w-full pl-11 pr-4 py-3 bg-slate-700 border border-slate-600 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent"
+                    placeholder="Enter fee amount"
+                    value={form.fee_amount}
+                    onChange={(e) => setForm((prev) => ({ ...prev, fee_amount: e.target.value }))}
+                    required
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-slate-300 mb-2">Late Fee Amount</label>
+                <div className="relative">
+                  <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
+                  <input
+                    type="number"
+                    min="0"
+                    step="0.01"
+                    className="w-full pl-11 pr-4 py-3 bg-slate-700 border border-slate-600 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent"
+                    placeholder="Enter late fee"
+                    value={form.late_fee_amount}
+                    onChange={(e) => setForm((prev) => ({ ...prev, late_fee_amount: e.target.value }))}
+                  />
+                </div>
+                <p className="text-xs text-slate-500 mt-1">Applied only after due date if unpaid</p>
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-slate-300 mb-2">Notes</label>
+              <div className="relative">
+                <FileText className="absolute left-3 top-3 w-5 h-5 text-slate-400" />
+                <textarea
+                  rows={3}
+                  className="w-full pl-11 pr-4 py-3 bg-slate-700 border border-slate-600 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent resize-none"
+                  placeholder="Optional notes for this fee record"
+                  value={form.notes}
+                  onChange={(e) => setForm((prev) => ({ ...prev, notes: e.target.value }))}
+                />
+              </div>
+            </div>
+
+            <button
+              type="submit"
+              disabled={createMutation.isPending || updateMutation.isPending}
+              className="w-full py-3 px-4 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white font-semibold rounded-lg transition-all duration-200 transform hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+            >
+              {createMutation.isPending || updateMutation.isPending ? 'Saving...' : editRecord ? 'Update Fee Record' : 'Create Fee Record'}
+            </button>
           </form>
         </div>
-
-        {mutationError && (
-          <div className="card border-red-500/40 bg-red-500/10 text-red-300 text-sm">
-            {mutationError}
-          </div>
-        )}
       </div>
     </div>
   )
