@@ -138,9 +138,9 @@ class Grade(Base):
     
     assessment_type = Column(String(50), nullable=False)
     assessment_name = Column(String(255), nullable=False)
-    score = Column(Float, nullable=False)
-    max_score = Column(Float, nullable=False)
-    percentage = Column(Float, nullable=True)
+    score = Column(Numeric(10, 2), nullable=False)
+    max_score = Column(Numeric(10, 2), nullable=False)
+    percentage = Column(Numeric(5, 2), nullable=True)
     letter_grade = Column(String(5), nullable=True)
     
     date_assessed = Column(Date, nullable=True)
