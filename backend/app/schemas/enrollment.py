@@ -1,6 +1,6 @@
 from pydantic import BaseModel
 from typing import Optional
-from datetime import datetime
+from datetime import datetime, date
 
 
 class EnrollmentBase(BaseModel):
@@ -9,20 +9,20 @@ class EnrollmentBase(BaseModel):
 
 
 class EnrollmentCreate(EnrollmentBase):
-    enrollment_date: Optional[datetime] = None
+    enrollment_date: Optional[date] = None
 
 
 class EnrollmentUpdate(BaseModel):
     student_id: Optional[int] = None
     course_id: Optional[int] = None
-    enrollment_date: Optional[datetime] = None
+    enrollment_date: Optional[date] = None
     status: Optional[str] = None
 
 
 
 class EnrollmentResponse(EnrollmentBase):
     id: int
-    enrollment_date: datetime
+    enrollment_date: date
     status: str
     created_at: datetime
     

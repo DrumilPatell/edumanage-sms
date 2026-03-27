@@ -101,7 +101,7 @@ class Enrollment(Base):
     student_id = Column(Integer, ForeignKey("students.id", ondelete="CASCADE"), nullable=False)
     course_id = Column(Integer, ForeignKey("courses.id", ondelete="CASCADE"), nullable=False)
     
-    enrollment_date = Column(DateTime(timezone=True), server_default=func.now())
+    enrollment_date = Column(Date, server_default=func.current_date())
     status = Column(String(20), default="active")
     
     created_at = Column(DateTime(timezone=True), server_default=func.now())
