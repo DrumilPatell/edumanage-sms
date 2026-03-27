@@ -3,7 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { useNavigate } from 'react-router-dom'
 import { academicApi } from '../services/api'
 import { useAuthStore } from '../store/authStore'
-import { Plus, Edit2, Trash2, Search, ChevronLeft, ChevronRight, Award, BookOpen, ClipboardList, Target, ChevronDown } from 'lucide-react'
+import { Plus, Edit2, Trash2, Search, ChevronLeft, ChevronRight, Award, BookOpen, ClipboardList, Target, ChevronDown, FileText } from 'lucide-react'
 import api from '../lib/api'
 
 export default function GradesPage() {
@@ -145,7 +145,7 @@ export default function GradesPage() {
       </div>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-2 md:grid-cols-6 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
         <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-4">
           <div className="flex items-center gap-3">
             <div className="p-2 bg-slate-700/50 rounded-lg">
