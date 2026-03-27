@@ -86,6 +86,7 @@ app = FastAPI(
 
 allowed_origins = {
     settings.FRONTEND_URL,
+    "https://edumanage-frontend-seven.vercel.app",
     "http://localhost:5173",
     "http://localhost:5174",
     "http://127.0.0.1:5173",
