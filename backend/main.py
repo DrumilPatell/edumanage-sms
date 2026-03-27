@@ -109,8 +109,8 @@ async def root():
         "status": "✅ Backend Server Running Successfully!",
         "message": "Student Management System API is live",
         "version": "1.0.0",
-        "docs": "http://127.0.0.1:8000/api/docs",
-        "health": "http://127.0.0.1:8000/health"
+        "docs": "https://edumanage-backend-ld05.onrender.com/api/docs",
+        "health": "https://edumanage-backend-ld05.onrender.com/health"
     }
 
 

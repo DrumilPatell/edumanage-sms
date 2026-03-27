@@ -388,7 +388,6 @@ const GradePage = () => {
                     className="w-full pl-11 pr-10 py-3 bg-slate-700 border border-slate-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent appearance-none cursor-pointer"
                   >
                     <option value="">Select type</option>
-                    <option value="quiz">Quiz</option>
                     <option value="midterm">Midterm</option>
                     <option value="final">Final</option>
                     <option value="assignment">Assignment</option>
@@ -450,7 +449,7 @@ const GradePage = () => {
                   value={formData.assessment_name}
                   onChange={handleChange}
                   required
-                  placeholder="e.g., Midterm Exam 1, Quiz 3, Final Project"
+                  placeholder="e.g., Midterm Exam 1, Assignment 3, Final Project"
                   className="w-full pl-11 pr-4 py-3 bg-slate-700 border border-slate-600 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent"
                 />
               </div>

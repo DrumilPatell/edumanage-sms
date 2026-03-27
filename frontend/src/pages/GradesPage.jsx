@@ -3,7 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { useNavigate } from 'react-router-dom'
 import { academicApi } from '../services/api'
 import { useAuthStore } from '../store/authStore'
-import { Plus, Edit2, Trash2, Search, ChevronLeft, ChevronRight, Award, FileText, BookOpen, ClipboardList, Target, ChevronDown } from 'lucide-react'
+import { Plus, Edit2, Trash2, Search, ChevronLeft, ChevronRight, Award, BookOpen, ClipboardList, Target, ChevronDown } from 'lucide-react'
 import api from '../lib/api'
 
 export default function GradesPage() {
@@ -27,12 +27,11 @@ export default function GradesPage() {
   // Calculate stats by assessment type
   const stats = useMemo(() => {
     const total = grades.length
-    const quiz = grades.filter(r => r.assessment_type === 'quiz').length
     const midterm = grades.filter(r => r.assessment_type === 'midterm').length
     const final = grades.filter(r => r.assessment_type === 'final').length
     const assignment = grades.filter(r => r.assessment_type === 'assignment').length
     const project = grades.filter(r => r.assessment_type === 'project').length
-    return { total, quiz, midterm, final, assignment, project }
+    return { total, midterm, final, assignment, project }
   }, [grades])
 
   // Filter by type first, then by search term
@@ -110,7 +109,6 @@ export default function GradesPage() {
 
   const getTypeBadge = (type) => {
     const badges = {
-      quiz: 'bg-blue-500/20 text-blue-400 border-blue-500/30',
       midterm: 'bg-purple-500/20 text-purple-400 border-purple-500/30',
       final: 'bg-red-500/20 text-red-400 border-red-500/30',
       assignment: 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30',
@@ -156,17 +154,6 @@ export default function GradesPage() {
             <div>
               <p className="text-2xl font-bold text-white">{stats.total}</p>
               <p className="text-xs text-slate-400">Total Records</p>
-            </div>
-          </div>
-        </div>
-        <div className="bg-blue-500/10 border border-blue-500/30 rounded-xl p-4">
-          <div className="flex items-center gap-3">
-            <div className="p-2 bg-blue-500/20 rounded-lg">
-              <FileText className="w-5 h-5 text-blue-400" />
-            </div>
-            <div>
-              <p className="text-2xl font-bold text-blue-400">{stats.quiz}</p>
-              <p className="text-xs text-slate-400">Quizzes</p>
             </div>
           </div>
         </div>
@@ -220,7 +207,6 @@ export default function GradesPage() {
       <div className="flex flex-wrap items-center gap-2">
         {[
           { key: 'all', label: 'All', count: stats.total },
-          { key: 'quiz', label: 'Quiz', count: stats.quiz },
           { key: 'midterm', label: 'Midterm', count: stats.midterm },
           { key: 'final', label: 'Final', count: stats.final },
           { key: 'assignment', label: 'Assignment', count: stats.assignment },
