@@ -7,6 +7,19 @@ export default function StudentAttendancePage() {
   const [selectedCourseId, setSelectedCourseId] = useState(null)
   const [currentDate, setCurrentDate] = useState(new Date())
 
+  const toLocalISODate = (date) => {
+    const year = date.getFullYear()
+    const month = String(date.getMonth() + 1).padStart(2, '0')
+    const day = String(date.getDate()).padStart(2, '0')
+    return `${year}-${month}-${day}`
+  }
+
+  const parseISODateToLocal = (isoDate) => {
+    if (!isoDate) return null
+    const [year, month, day] = isoDate.split('-').map(Number)
+    return new Date(year, month - 1, day)
+  }
+
   const { data: profile } = useQuery({
     queryKey: ['student-profile'],
     queryFn: () => studentsApi.getMyProfile(),
@@ -38,7 +51,7 @@ export default function StudentAttendancePage() {
   const selectedCourseEnrollmentDate = useMemo(() => {
     if (!selectedCourseId) return null
     const course = courses.find(c => c.id === selectedCourseId)
-    return course?.enrollmentDate ? new Date(course.enrollmentDate) : null
+    return course?.enrollmentDate ? parseISODateToLocal(course.enrollmentDate) : null
   }, [selectedCourseId, courses])
 
   // Navigate to enrollment month when course is selected
@@ -58,7 +71,7 @@ export default function StudentAttendancePage() {
   const attendanceMap = useMemo(() => {
     const map = {}
     filteredAttendance.forEach(record => {
-      const dateKey = new Date(record.date).toISOString().split('T')[0]
+      const dateKey = String(record.date).split('T')[0]
       map[dateKey] = record
     })
     return map
@@ -138,7 +151,7 @@ export default function StudentAttendancePage() {
   
   // Add days of the month
   for (let day = 1; day <= daysInMonth; day++) {
-    const dateKey = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`
+    const dateKey = toLocalISODate(new Date(year, month, day))
     const currentDayDate = new Date(year, month, day)
     
     // Check if this date is before enrollment date
@@ -154,7 +167,7 @@ export default function StudentAttendancePage() {
       day,
       dateKey,
       attendance: attendanceMap[dateKey] || null,
-      isToday: new Date().toISOString().split('T')[0] === dateKey,
+      isToday: toLocalISODate(new Date()) === dateKey,
       isBeforeEnrollment
     })
   }
@@ -261,7 +274,7 @@ export default function StudentAttendancePage() {
                 </h3>
                 {selectedCourseEnrollmentDate && (
                   <p className="text-xs text-slate-400 mt-0.5">
-                    Enrolled: {new Date(selectedCourseEnrollmentDate).toLocaleDateString('en-GB', { 
+                    Enrolled: {selectedCourseEnrollmentDate.toLocaleDateString('en-GB', { 
                       day: '2-digit', 
                       month: 'short', 
                       year: 'numeric' 

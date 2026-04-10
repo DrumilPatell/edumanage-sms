@@ -19,6 +19,19 @@ export default function AttendancePage() {
   const [editingDate, setEditingDate] = useState(null)
   const [editingRecord, setEditingRecord] = useState(null)
   const [editForm, setEditForm] = useState({ status: 'present', notes: '' })
+
+  const toLocalISODate = (date) => {
+    const year = date.getFullYear()
+    const month = String(date.getMonth() + 1).padStart(2, '0')
+    const day = String(date.getDate()).padStart(2, '0')
+    return `${year}-${month}-${day}`
+  }
+
+  const parseISODateToLocal = (isoDate) => {
+    if (!isoDate) return null
+    const [year, month, day] = isoDate.split('-').map(Number)
+    return new Date(year, month - 1, day)
+  }
   
   // Fetch all data
   const { data: attendance = [], isLoading: loadingAttendance } = useQuery({
@@ -60,7 +73,7 @@ export default function AttendancePage() {
     const enrollment = enrollments.find(
       e => e.course_id === selectedCourseId && e.student_id === selectedStudentId
     )
-    return enrollment?.enrollment_date ? new Date(enrollment.enrollment_date) : null
+    return enrollment?.enrollment_date ? parseISODateToLocal(enrollment.enrollment_date) : null
   }, [selectedCourseId, selectedStudentId, enrollments])
 
   // Navigate to enrollment month when student is selected
@@ -87,7 +100,7 @@ export default function AttendancePage() {
   const attendanceMap = useMemo(() => {
     const map = {}
     filteredAttendance.forEach(record => {
-      const dateKey = new Date(record.date).toISOString().split('T')[0]
+      const dateKey = String(record.date).split('T')[0]
       map[dateKey] = record
     })
     return map
@@ -174,7 +187,7 @@ export default function AttendancePage() {
     
     // Add days of the month
     for (let day = 1; day <= daysInMonth; day++) {
-      const dateKey = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`
+      const dateKey = toLocalISODate(new Date(year, month, day))
       const currentDayDate = new Date(year, month, day)
       
       let isBeforeEnrollment = false
@@ -193,7 +206,7 @@ export default function AttendancePage() {
         day,
         dateKey,
         attendance: attendanceMap[dateKey] || null,
-        isToday: new Date().toISOString().split('T')[0] === dateKey,
+        isToday: toLocalISODate(new Date()) === dateKey,
         isBeforeEnrollment,
         isFuture
       })
@@ -608,7 +621,7 @@ export default function AttendancePage() {
               {editingRecord ? 'Edit Attendance' : 'Mark Attendance'}
             </h3>
             <p className="text-slate-400 mb-4">
-              Date: {new Date(editingDate).toLocaleDateString('en-GB', { 
+              Date: {parseISODateToLocal(editingDate).toLocaleDateString('en-GB', { 
                 weekday: 'long',
                 day: '2-digit', 
                 month: 'long', 
