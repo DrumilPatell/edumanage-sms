@@ -23,6 +23,19 @@ const MarkAttendancePage = () => {
   const [fetchingCourses, setFetchingCourses] = useState(false);
   const [saving, setSaving] = useState(false);
 
+  const toLocalISODate = (date) => {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  };
+
+  const parseISODateToLocal = (isoDate) => {
+    if (!isoDate) return null;
+    const [year, month, day] = isoDate.split('-').map(Number);
+    return new Date(year, month - 1, day);
+  };
+
   useEffect(() => {
     fetchStudents();
   }, []);
@@ -82,8 +95,8 @@ const MarkAttendancePage = () => {
     try {
       const year = currentMonth.getFullYear();
       const month = currentMonth.getMonth();
-      const startDate = new Date(year, month, 1).toISOString().split('T')[0];
-      const endDate = new Date(year, month + 1, 0).toISOString().split('T')[0];
+      const startDate = toLocalISODate(new Date(year, month, 1));
+      const endDate = toLocalISODate(new Date(year, month + 1, 0));
       
       const response = await api.get('/academic/attendance/', {
         params: {
@@ -128,13 +141,13 @@ const MarkAttendancePage = () => {
     const dateKey = formatDateKey(day);
     const today = new Date();
     today.setHours(23, 59, 59, 999);
-    const clickedDate = new Date(dateKey);
+    const clickedDate = parseISODateToLocal(dateKey);
     
     if (clickedDate > today) return;
     
     // Check if date is before enrollment date
     if (selectedCourse.enrollment_date) {
-      const enrollmentDate = new Date(selectedCourse.enrollment_date);
+      const enrollmentDate = parseISODateToLocal(selectedCourse.enrollment_date);
       enrollmentDate.setHours(0, 0, 0, 0);
       if (clickedDate < enrollmentDate) return;
     }
@@ -173,7 +186,7 @@ const MarkAttendancePage = () => {
   const handlePrevMonth = () => {
     // Check if we can go to previous month based on enrollment date
     if (selectedCourse?.enrollment_date) {
-      const enrollmentDate = new Date(selectedCourse.enrollment_date);
+      const enrollmentDate = parseISODateToLocal(selectedCourse.enrollment_date);
       const prevMonth = new Date(currentMonth.getFullYear(), currentMonth.getMonth() - 1, 1);
       const enrollmentMonthStart = new Date(enrollmentDate.getFullYear(), enrollmentDate.getMonth(), 1);
       if (prevMonth < enrollmentMonthStart) return;
@@ -243,7 +256,7 @@ const MarkAttendancePage = () => {
   // Check if we can navigate to previous month
   const canGoPrevMonth = (() => {
     if (!selectedCourse?.enrollment_date) return true;
-    const enrollmentDate = new Date(selectedCourse.enrollment_date);
+    const enrollmentDate = parseISODateToLocal(selectedCourse.enrollment_date);
     const prevMonth = new Date(currentMonth.getFullYear(), currentMonth.getMonth() - 1, 1);
     const enrollmentMonthStart = new Date(enrollmentDate.getFullYear(), enrollmentDate.getMonth(), 1);
     return prevMonth >= enrollmentMonthStart;
@@ -355,7 +368,7 @@ const MarkAttendancePage = () => {
                             setExistingAttendance({});
                             // Navigate to enrollment month if current month is before it
                             if (course.enrollment_date) {
-                              const enrollmentDate = new Date(course.enrollment_date);
+                              const enrollmentDate = parseISODateToLocal(course.enrollment_date);
                               const enrollmentMonthStart = new Date(enrollmentDate.getFullYear(), enrollmentDate.getMonth(), 1);
                               const currentMonthStart = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), 1);
                               if (currentMonthStart < enrollmentMonthStart) {
@@ -373,7 +386,7 @@ const MarkAttendancePage = () => {
                           <p className="text-sm text-slate-400">{course.course_name}</p>
                           {course.enrollment_date && (
                             <p className="text-xs text-amber-400 mt-1">
-                              Enrolled: {new Date(course.enrollment_date).toLocaleDateString('en-GB')}
+                              Enrolled: {parseISODateToLocal(course.enrollment_date).toLocaleDateString('en-GB')}
                             </p>
                           )}
                         </button>
@@ -427,7 +440,7 @@ const MarkAttendancePage = () => {
                   {selectedCourse?.enrollment_date && (
                     <div className="mb-4 p-3 bg-amber-500/10 border border-amber-500/30 rounded-lg text-amber-400 text-sm">
                       <Calendar className="w-4 h-4 inline mr-2" />
-                      Enrollment started: {new Date(selectedCourse.enrollment_date).toLocaleDateString('en-GB')}
+                      Enrollment started: {parseISODateToLocal(selectedCourse.enrollment_date).toLocaleDateString('en-GB')}
                     </div>
                   )}
 
@@ -482,7 +495,7 @@ const MarkAttendancePage = () => {
                     {Array.from({ length: daysInMonth }).map((_, i) => {
                       const day = i + 1;
                       const dateKey = formatDateKey(day);
-                      const dateObj = new Date(dateKey);
+                      const dateObj = parseISODateToLocal(dateKey);
                       const isFuture = dateObj > today;
                       const isToday = dateObj.toDateString() === today.toDateString();
                       const status = getDateStatus(day);
@@ -491,7 +504,7 @@ const MarkAttendancePage = () => {
                       
                       // Check if date is before enrollment date
                       const isBeforeEnrollment = selectedCourse?.enrollment_date 
-                        ? dateObj < new Date(selectedCourse.enrollment_date)
+                        ? dateObj < parseISODateToLocal(selectedCourse.enrollment_date)
                         : false;
                       const isDisabled = isFuture || isBeforeEnrollment;
                       
